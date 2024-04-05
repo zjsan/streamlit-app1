@@ -1,12 +1,15 @@
 import streamlit as st
 from hugchat import hugchat
 from hugchat.login import Login
+from dotenv import dotenv_values
 
 st.set_page_config(page_title="🤗💬 Cognicraft")
 
+secrets = dotenv_values('hf.env')
+
 #credentials
-hf_email = 'zjsantos25@gmail.com'
-hf_pass = 'Th3ege@rprggrmmr1231231'
+hf_email = secrets['EMAIL']
+hf_pass = secrets['PASS']
 
 cookie_path_dir = "./cookies"
 sign = Login(hf_email, hf_pass)
@@ -40,7 +43,7 @@ def question_params():
         
     if question_type == 'Multiple Choice':
         st.write('Right you Multiple choice')
-        question_params.append(question_type)
+        question_params.append(question_type)   
     elif question_type == 'True or False':
         st.write('True or False')
         question_params.append(question_type)
