@@ -151,8 +151,8 @@ def generate_response(prompt,addional_prompts):
       response = chatbot.chat(full_prompt)
       return response
   
- # elif addional_prompts[0] == 'Matching Type':
-      #full_prompt = "Develop a matching-type question with {number of items} on the left side and {number of items} options on the right side. This question should evaluate {taxonomy level} knowledge of {concept} at a {difficulty} level."
+  elif addional_prompts[0] == 'Matching Type':
+      full_prompt = "Generate a matching type question where [number] items need to be matched, assessing [taxonomy level]. Ensure the difficulty level is [easy/medium/hard]."
 
 ## Conditional display of AI generated responses as a function of user provided prompts
 #printings
