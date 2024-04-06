@@ -38,7 +38,7 @@ def question_params():
         #question type
         question_type = st.selectbox(
         "Question Type",
-        ("Multiple Choice", "True or False", "Fill in the blanks"),
+        ("Multiple Choice", "True or False", "Fill in the blanks","Matching Type"),
         index=None,
         placeholder="Select question type...",
         )
@@ -52,6 +52,9 @@ def question_params():
             question_params += question_type 
         elif question_type == 'Fill in the blanks':
             st.write('Fill in the blanks')
+            question_params += question_type
+        elif question_type == 'Matching Type':
+            st.write('Matching Type')
             question_params += question_type
         else:
             st.write('Select Question type') 
@@ -121,13 +124,35 @@ def generate_response(prompt,addional_prompts):
 
   chatbot = hugchat.ChatBot(cookies=cookies.get_dict()) 
 
+  #testing prompts parameters
+  #added prompt templates for the ai to use in the question generation
+  #addional_prompts[0] = Question Type
+  #additional_prompts[1] = Question Number
+  #additional_prompts[2] = Taxonomy Level
+  #additional_prompts[3] = Difficulty level
   if addional_prompts[0] == 'Multiple Choice':
-      full_prompt = "Create a multiple-choice question of {} level that tests {}" + "understanding of {}.Include {} answer choices.".format(addional_prompts[3], 
+      
+     
+      full_prompt = "Create a multiple-choice question of {} level that tests {}" + "based on this context: {}.Include {} number of question items, provide its choices.".format(addional_prompts[3], 
       addional_prompts[2],prompt, addional_prompts[1])
+      
+      response = chatbot.chat(full_prompt)
+      return response
 
-
-  response = chatbot.chat(full_prompt)
-  return response
+  elif addional_prompts[0] == 'True or False':
+      full_prompt = "Formulate a {} true or false question that assesses {} based on this context:{}.Include {} number of question items".format(addional_prompts[3],addional_prompts[2], prompt,addional_prompts[1])
+      
+      response = chatbot.chat(full_prompt)
+      return response
+  
+  elif addional_prompts[0] == 'Fill in the Blanks':
+      full_prompt = "Generate a fill-in-the-blank question with a blank space at the most appropriate location. The question should target {taxonomy level} based on this context: {concept}. Have a {difficulty} difficulty level and number of items of {}".format(addional_prompts[2],prompt,
+                     addional_prompts[3],addional_prompts[1])
+      response = chatbot.chat(full_prompt)
+      return response
+  
+ # elif addional_prompts[0] == 'Matching Type':
+      #full_prompt = "Develop a matching-type question with {number of items} on the left side and {number of items} options on the right side. This question should evaluate {taxonomy level} knowledge of {concept} at a {difficulty} level."
 
 ## Conditional display of AI generated responses as a function of user provided prompts
 #printings
