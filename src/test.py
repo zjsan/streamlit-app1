@@ -33,42 +33,76 @@ def question_params():
 
     question_params = {}
 
-    #question type
-    question_type = st.selectbox(
-    "Question Type",
-    ("Multiple Choice", "True or False", "Fill in the blanks"),
-    index=None,
-    placeholder="Select question type...",
-    )
-        
-    if question_type == 'Multiple Choice':
-        st.write('Right you Multiple choice')
-        question_params.append(question_type)   
-    elif question_type == 'True or False':
-        st.write('True or False')
-        question_params.append(question_type)
-    elif question_type == 'Fill in the blanks':
-        st.write('Fill in the blanks')
-        question_params.append(question_type)
-    
-    #question_number
-    question_number = st.text_input('Number of Items')
-    
-    #taxomy level
-    taxonomy_level = st.selectbox(
-    "Taxonomy Level",
-    ("Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"),
-    index=None,
-    placeholder="Select taxonomy level...",
-    )
+    if question_params.length() > 0:
 
-    #difficulty level
-    difficulty = st.selectbox(
-    "Question Difficulty",
-    ("Easy", "Medium", "Hard"),
-    index=None,
-    placeholder="Select difficulty level...",
-    )
+        #question type
+        question_type = st.selectbox(
+        "Question Type",
+        ("Multiple Choice", "True or False", "Fill in the blanks"),
+        index=None,
+        placeholder="Select question type...",
+        )
+            
+        #condition for question type
+        if question_type == 'Multiple Choice':
+            st.write('Right you Multiple choice')
+            question_params += question_type  
+        elif question_type == 'True or False':
+            st.write('True or False')
+            question_params += question_type 
+        elif question_type == 'Fill in the blanks':
+            st.write('Fill in the blanks')
+            question_params += question_type
+        else:
+            st.write('Select Question type') 
+        
+        #question_number
+        question_number = st.text_input('Number of Items')
+        question_params += question_number#add number of items
+        
+        #taxomy level
+        taxonomy_level = st.selectbox(
+        "Taxonomy Level",
+        ("Remembering", "Understanding", "Applying", "Analyzing", "Evaluating", "Creating"),
+        index=None,
+        placeholder="Select taxonomy level...",
+        )
+
+        #condition for taxonomy level
+        if taxonomy_level == 'Remembering':
+            st.write('Remembering')
+            question_params += taxonomy_level  
+        elif taxonomy_level == 'Understanding':
+            st.write('Understanding')
+            question_params += taxonomy_level 
+        elif taxonomy_level == 'Applying':
+            st.write('Applying')
+            question_params += taxonomy_level
+        elif taxonomy_level == 'Analyzing':
+            st.write('Analyzing')
+            question_params += taxonomy_level
+        elif taxonomy_level == 'Evaluating':
+            st.write('Evaluating')
+            question_params += taxonomy_level
+        elif taxonomy_level == 'Creating':
+            st.write('Creating')
+            question_params += taxonomy_level
+        else:
+            st.write('Select Taxonomy Level') 
+
+        #difficulty level
+        difficulty = st.selectbox(
+        "Question Difficulty",
+        ("Easy", "Medium", "Hard"),
+        index=None,
+        placeholder="Select difficulty level...",
+        )
+        question_params += difficulty
+    else:
+        st.write('Select Question Parameters')
+
+    return question_params
+        
 
 #Session creation
 if 'generated' not in st.session_state:
@@ -82,21 +116,25 @@ response_container = st.container()
 
 
 #generation of the response from the LLM
-def generate_response(prompt):
+def generate_response(prompt,addional_prompts):
   # Send prompt to chatbot and get response
 
   chatbot = hugchat.ChatBot(cookies=cookies.get_dict()) 
 
-  full_prompt = "Given the context {}, generate five multiple choice questions together with their corresponding distractors and give the answer it is simplest way".format(prompt)
+  if addional_prompts[0] == 'Multiple Choice':
+      full_prompt = "Create a multiple-choice question of {} level that tests {}" + "understanding of {}.Include {} answer choices.".format(addional_prompts[3], 
+      addional_prompts[2],prompt, addional_prompts[1])
+
+
   response = chatbot.chat(full_prompt)
   return response
 
 ## Conditional display of AI generated responses as a function of user provided prompts
 #printings
-def response_ai(user_message):
+def response_ai(user_message, additional_prompts):
     with response_container:
         if user_message:
-            response = generate_response(user_message)
+            response = generate_response(user_message,additional_prompts)
             st.session_state.past.append(user_message)
             st.session_state.generated.append(response)
             
@@ -109,10 +147,10 @@ def response_ai(user_message):
 with input_container:
     
     # User input
-    additional_prompts = question_params()
+    additional_prompts = list(question_params())
     
     user_message = st.text_input("Enter your message:", key="input") # taking user provided prompt as input
     if st.button("Submit") and user_message != " ":
-        response_ai(user_message)
+        response_ai(user_message, additional_prompts)
 
 
