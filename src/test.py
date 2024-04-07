@@ -45,22 +45,22 @@ def question_params():
     #condition for question type
     if question_type == 'Multiple Choice':
         st.write('Right you Multiple choice')
-        question_params += question_type  
+        question_params.append(question_type)  
     elif question_type == 'True or False':
         st.write('True or False')
-        question_params += question_type 
+        question_params.append(question_type)
     elif question_type == 'Fill in the blanks':
         st.write('Fill in the blanks')
-        question_params += question_type
+        question_params.append(question_type)
     elif question_type == 'Matching Type':
         st.write('Matching Type')
-        question_params += question_type
+        question_params.append(question_type)
     else:
         st.write('Select Question type') 
     
     #question_number
     question_number = st.text_input('Number of Items')
-    question_params += question_number#add number of items
+    question_params.append(question_number)#add number of items
     
     #taxomy level
     taxonomy_level = st.selectbox(
@@ -73,22 +73,22 @@ def question_params():
     #condition for taxonomy level
     if taxonomy_level == 'Remembering':
         st.write('Remembering')
-        question_params += taxonomy_level  
+        question_params.append(taxonomy_level)  
     elif taxonomy_level == 'Understanding':
         st.write('Understanding')
-        question_params += taxonomy_level 
+        question_params.append(taxonomy_level) 
     elif taxonomy_level == 'Applying':
         st.write('Applying')
-        question_params += taxonomy_level
+        question_params.append(taxonomy_level)
     elif taxonomy_level == 'Analyzing':
         st.write('Analyzing')
-        question_params += taxonomy_level
+        question_params.append(taxonomy_level)
     elif taxonomy_level == 'Evaluating':
         st.write('Evaluating')
-        question_params += taxonomy_level
+        question_params.append(taxonomy_level)
     elif taxonomy_level == 'Creating':
         st.write('Creating')
-        question_params += taxonomy_level
+        question_params.append(taxonomy_level)
     else:
         st.write('Select Taxonomy Level') 
 
@@ -99,7 +99,7 @@ def question_params():
     index=None,
     placeholder="Select difficulty level...",
     )
-    question_params += difficulty
+    question_params.append(difficulty)
 
     return question_params
         
@@ -128,8 +128,6 @@ def generate_response(prompt,addional_prompts):
   #additional_prompts[2] = Taxonomy Level
   #additional_prompts[3] = Difficulty level
   if addional_prompts[0] == 'Multiple Choice':
-      
-     
       full_prompt = "Create a multiple-choice question of {} level that tests {}" + "based on this context: {}.Include {} number of question items, provide its choices.".format(addional_prompts[3], 
       addional_prompts[2],prompt, addional_prompts[1])
       
@@ -170,10 +168,11 @@ def main():
     with input_container:
         # User input
         additional_prompts = list(question_params())
+        st.write(additional_prompts)#checking the index location of the additional prompts
         
         user_message = st.text_input("Enter your message:", key="input") # taking user provided prompt as input
-        if st.button("Submit") and user_message != " ":
-            response_ai(user_message, additional_prompts)
+        #if st.button("Submit") and user_message != " ":
+            #response_ai(user_message, additional_prompts)
 
 if __name__ == "__main__":
     main()
