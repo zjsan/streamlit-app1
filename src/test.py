@@ -31,78 +31,75 @@ with st.sidebar:
 def question_params():
 
 
-    question_params = {}
+    question_params = []
+    #question_params_length = len(question_params)
 
-    if question_params.length() > 0:
-
-        #question type
-        question_type = st.selectbox(
-        "Question Type",
-        ("Multiple Choice", "True or False", "Fill in the blanks","Matching Type"),
-        index=None,
-        placeholder="Select question type...",
-        )
-            
-        #condition for question type
-        if question_type == 'Multiple Choice':
-            st.write('Right you Multiple choice')
-            question_params += question_type  
-        elif question_type == 'True or False':
-            st.write('True or False')
-            question_params += question_type 
-        elif question_type == 'Fill in the blanks':
-            st.write('Fill in the blanks')
-            question_params += question_type
-        elif question_type == 'Matching Type':
-            st.write('Matching Type')
-            question_params += question_type
-        else:
-            st.write('Select Question type') 
+    #question type
+    question_type = st.selectbox(
+    "Question Type",
+    ("Multiple Choice", "True or False", "Fill in the blanks","Matching Type"),
+    index=None,
+    placeholder="Select question type...",
+    )
         
-        #question_number
-        question_number = st.text_input('Number of Items')
-        question_params += question_number#add number of items
-        
-        #taxomy level
-        taxonomy_level = st.selectbox(
-        "Taxonomy Level",
-        ("Remembering", "Understanding", "Applying", "Analyzing", "Evaluating", "Creating"),
-        index=None,
-        placeholder="Select taxonomy level...",
-        )
-
-        #condition for taxonomy level
-        if taxonomy_level == 'Remembering':
-            st.write('Remembering')
-            question_params += taxonomy_level  
-        elif taxonomy_level == 'Understanding':
-            st.write('Understanding')
-            question_params += taxonomy_level 
-        elif taxonomy_level == 'Applying':
-            st.write('Applying')
-            question_params += taxonomy_level
-        elif taxonomy_level == 'Analyzing':
-            st.write('Analyzing')
-            question_params += taxonomy_level
-        elif taxonomy_level == 'Evaluating':
-            st.write('Evaluating')
-            question_params += taxonomy_level
-        elif taxonomy_level == 'Creating':
-            st.write('Creating')
-            question_params += taxonomy_level
-        else:
-            st.write('Select Taxonomy Level') 
-
-        #difficulty level
-        difficulty = st.selectbox(
-        "Question Difficulty",
-        ("Easy", "Medium", "Hard"),
-        index=None,
-        placeholder="Select difficulty level...",
-        )
-        question_params += difficulty
+    #condition for question type
+    if question_type == 'Multiple Choice':
+        st.write('Right you Multiple choice')
+        question_params += question_type  
+    elif question_type == 'True or False':
+        st.write('True or False')
+        question_params += question_type 
+    elif question_type == 'Fill in the blanks':
+        st.write('Fill in the blanks')
+        question_params += question_type
+    elif question_type == 'Matching Type':
+        st.write('Matching Type')
+        question_params += question_type
     else:
-        st.write('Select Question Parameters')
+        st.write('Select Question type') 
+    
+    #question_number
+    question_number = st.text_input('Number of Items')
+    question_params += question_number#add number of items
+    
+    #taxomy level
+    taxonomy_level = st.selectbox(
+    "Taxonomy Level",
+    ("Remembering", "Understanding", "Applying", "Analyzing", "Evaluating", "Creating"),
+    index=None,
+    placeholder="Select taxonomy level...",
+    )
+
+    #condition for taxonomy level
+    if taxonomy_level == 'Remembering':
+        st.write('Remembering')
+        question_params += taxonomy_level  
+    elif taxonomy_level == 'Understanding':
+        st.write('Understanding')
+        question_params += taxonomy_level 
+    elif taxonomy_level == 'Applying':
+        st.write('Applying')
+        question_params += taxonomy_level
+    elif taxonomy_level == 'Analyzing':
+        st.write('Analyzing')
+        question_params += taxonomy_level
+    elif taxonomy_level == 'Evaluating':
+        st.write('Evaluating')
+        question_params += taxonomy_level
+    elif taxonomy_level == 'Creating':
+        st.write('Creating')
+        question_params += taxonomy_level
+    else:
+        st.write('Select Taxonomy Level') 
+
+    #difficulty level
+    difficulty = st.selectbox(
+    "Question Difficulty",
+    ("Easy", "Medium", "Hard"),
+    index=None,
+    placeholder="Select difficulty level...",
+    )
+    question_params += difficulty
 
     return question_params
         
@@ -152,7 +149,7 @@ def generate_response(prompt,addional_prompts):
       return response
   
   elif addional_prompts[0] == 'Matching Type':
-      full_prompt = "Generate a matching type question where [number] items need to be matched, assessing [taxonomy level]. Ensure the difficulty level is [easy/medium/hard]."
+      full_prompt = "Generate a matching type question where {} items need to be matched, assessing {} based on this context {}. Ensure the difficulty level is {}.".format(addional_prompts[1],addional_prompts[2],prompt,addional_prompts[3] )
 
 ## Conditional display of AI generated responses as a function of user provided prompts
 #printings
