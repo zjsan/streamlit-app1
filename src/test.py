@@ -165,14 +165,17 @@ def response_ai(user_message, additional_prompts):
                 st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
                 st.write(st.session_state['generated'][i], key=str(i))
 
-# Applying the user input box
-with input_container:
-    
-    # User input
-    additional_prompts = list(question_params())
-    
-    user_message = st.text_input("Enter your message:", key="input") # taking user provided prompt as input
-    if st.button("Submit") and user_message != " ":
-        response_ai(user_message, additional_prompts)
+def main():
+    # Applying the user input box
+    with input_container:
+        # User input
+        additional_prompts = list(question_params())
+        
+        user_message = st.text_input("Enter your message:", key="input") # taking user provided prompt as input
+        if st.button("Submit") and user_message != " ":
+            response_ai(user_message, additional_prompts)
+
+if __name__ == "__main__":
+    main()
 
 
