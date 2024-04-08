@@ -136,18 +136,20 @@ def generate_response(prompt,question_parameters):
 
         #prompt template for multiple choice
         #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-        full_prompt = "Generate {} multiple choice questions at a {} difficulty level that test {} knowledge based on this text: {} Ensure each question has at least 4 answer choices and a clear answer key".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+        full_prompt = "Generate {} multiple choice questions at a {} difficulty level that test {} knowledge based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)# Debugging
 
         response = chatbot.chat(full_prompt)
         return response
 
   elif question_parameters[0] == 'True or False':
-        full_prompt = "Formulate a {} true or false question that assesses {} based on this context: {}. Include {} number of question items".format(question_parameters[3], 
-                      question_parameters[2], prompt, question_parameters[1])
+        
+        # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
+        full_prompt = "Generate {} True or False statements at a {} difficulty level that test {} knowledge based in this context: {} Ensure each question has a clear answer".format(question_parameters[0], question_parameters[3], question_parameters[2],prompt)
         st.write(full_prompt)  # Debugging
-        # response = chatbot.chat(full_prompt)
-        # return response
+        
+        response = chatbot.chat(full_prompt)
+        return response
   
   elif question_parameters[0] == 'Fill in the Blanks':
         full_prompt = "Generate a fill-in-the-blank question with a blank space at the most appropriate location. The question should target {} based on this context: {}. Have a {} difficulty level and number of items of {}".format(question_parameters[2], 
