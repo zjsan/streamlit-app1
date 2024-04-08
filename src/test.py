@@ -160,8 +160,17 @@ def generate_response(prompt,question_parameters):
         st.write(full_prompt)  # Debugging
 
         response = chatbot.chat(full_prompt)
-        return response
+        return response 
+  
+    
+  elif question_parameters[0] == 'Matching Type':
+      #prompt template for Matching Type
+      
+      full_prompt = "Generate a matching type question where {} items need to be matched, assessing {} based on this context {}. Ensure the difficulty level is {}. Create two list, one for the questions and one for the choices, questions should be in a number format".format(question_parameters[1], question_parameters[2],prompt,question_parameters[3])
+      st.write(full_prompt)  # Debugging
 
+      response = chatbot.chat(full_prompt)
+      return response 
   else:
         st.write('Please Check your inputs')
 
