@@ -17,7 +17,7 @@ cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
 
 
 with st.sidebar:
-    st.title('CogniCraft')
+    st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
     st.markdown('''
     ## About
     This app is a LLM-powered exam question generator built using:
@@ -35,7 +35,7 @@ def question_params():
     #question type
     question_type = st.selectbox(
     "Question Type",
-    ("Multiple Choice", "True or False", "Fill in the blanks","Matching Type"),
+    ("Multiple Choice", "True or False", "Fill in the Blanks","Matching Type"),
     index=None,
     placeholder="Select question type...",
     )
@@ -43,12 +43,12 @@ def question_params():
     #condition for question type
     if question_type == 'Multiple Choice':
         st.write('Multiple choice')
-        question_params.append(question_type)  
+        question_params.append(question_type)   
     elif question_type == 'True or False':
         st.write('True or False')
         question_params.append(question_type)
-    elif question_type == 'Fill in the blanks':
-        st.write('Fill in the blanks')
+    elif question_type == 'Fill in the Blanks':
+        st.write('Fill in the Blanks')
         question_params.append(question_type)
     elif question_type == 'Matching Type':
         st.write('Matching Type')
@@ -144,26 +144,24 @@ def generate_response(prompt,question_parameters):
 
   elif question_parameters[0] == 'True or False':
         
+        #prompt template for True or False
         # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
-        full_prompt = "Generate {} True or False statements at a {} difficulty level that test {} knowledge based in this context: {} Ensure each question has a clear answer".format(question_parameters[0], question_parameters[3], question_parameters[2],prompt)
+        full_prompt = "Generate {} statements at a {} difficulty level that test {} knowledge based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)  # Debugging
-        
+
         response = chatbot.chat(full_prompt)
         return response
   
   elif question_parameters[0] == 'Fill in the Blanks':
-        full_prompt = "Generate a fill-in-the-blank question with a blank space at the most appropriate location. The question should target {} based on this context: {}. Have a {} difficulty level and number of items of {}".format(question_parameters[2], 
-                       prompt, question_parameters[3], question_parameters[1])
+        
+        #prompt template for Fill in the Blanks
+        # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
+        full_prompt = "Generate {} fill-in-the-blank question items at a {} difficulty level that test {} knowledge  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)  # Debugging
-        # response = chatbot.chat(full_prompt)
-        # return response
-  
-  elif question_parameters[0] == 'Matching Type':
-        full_prompt = "Generate a matching type question where {} items need to be matched, assessing {} based on this context {}. Ensure the difficulty level is {}.".format(question_parameters[1], 
-                       question_parameters[2], prompt, question_parameters[3])
-        st.write(full_prompt)  # Debugging
-        # response = chatbot.chat(full_prompt)
-        # return response
+
+        response = chatbot.chat(full_prompt)
+        return response
+
   else:
         st.write('Please Check your inputs')
 
