@@ -129,10 +129,13 @@ def generate_response(prompt,question_parameters):
   #additional_prompts[3] = Difficulty level
   
   #there are errors in the full prompt
+  #full_prompt does not execute well - problem in the string formatting
   if question_parameters[0] == 'Multiple Choice':
+        
+        st.write(question_parameters)
         full_prompt = "Create a multiple-choice question of {} level that tests {} based on this context: {}. Include {} number of question items, provide its choices.".format(question_parameters[3], 
                       question_parameters[2], prompt, question_parameters[1])
-        st.write(full_prompt)  # Debugging
+        st.write(full_prompt)# Debugging
         # response = chatbot.chat(full_prompt)
         # return response
 
@@ -178,7 +181,7 @@ def main():
     with input_container:
         # User input
         additional_prompts = list(question_params())
-        print(additional_prompts)
+        print(additional_prompts)   
         st.write(additional_prompts)#checking the index location of the additional prompts
         
         user_message = st.text_input("Enter text context:", key="input") # taking user provided prompt as input
