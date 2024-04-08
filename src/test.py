@@ -133,11 +133,14 @@ def generate_response(prompt,question_parameters):
   if question_parameters[0] == 'Multiple Choice':
         
         st.write(question_parameters)
-        full_prompt = "Create a multiple-choice question of {} level that tests {} based on this context: {}. Include {} number of question items, provide its choices.".format(question_parameters[3], 
-                      question_parameters[2], prompt, question_parameters[1])
+
+        #prompt template for multiple choice
+        #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+        full_prompt = "Generate {} multiple choice questions at a {} difficulty level that test {} knowledge based on this text: {} Ensure each question has at least 4 answer choices and a clear answer key".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)# Debugging
-        # response = chatbot.chat(full_prompt)
-        # return response
+
+        response = chatbot.chat(full_prompt)
+        return response
 
   elif question_parameters[0] == 'True or False':
         full_prompt = "Formulate a {} true or false question that assesses {} based on this context: {}. Include {} number of question items".format(question_parameters[3], 
