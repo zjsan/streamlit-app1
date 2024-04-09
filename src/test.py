@@ -113,6 +113,8 @@ input_container = st.container()
 response_container = st.container()
 
 
+
+
 #generation of the response from the LLM
 def generate_response(prompt,question_parameters):
   # Send prompt to chatbot and get response
