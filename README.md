@@ -55,6 +55,9 @@ IDE: Visual Studio Code
 
 Streamlit: https://streamlit.io/
 
+hf.env - same directory level with test.py
+       - change contents of email and password based in the huggingface credentials
+
 
 ## Features 
 
