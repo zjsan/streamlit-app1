@@ -74,3 +74,14 @@ hf.env - same directory level with test.py
     2. Further assurance of the generated Questions
     3. Web layout and Design
     4. Implementation of further features
+    5. Bug in the text input
+
+## Need To Implement
+    1. PDF Upload 
+    2. Login Credentials for Users
+    3. Database if needed 
+    4. Chat History
+    5. Multiple Pages and Layouts 
+    6. Redesign of Web Components
+    7. Landing Page
+    8. Login Page - Redirect to huggingface
