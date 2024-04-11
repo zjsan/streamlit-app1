@@ -58,6 +58,13 @@ Streamlit: https://streamlit.io/
 hf.env - same directory level with test.py
        - change contents of email and password based in the huggingface credentials
 
+## Launch
+
+To launch the application simply the following command:
+```
+
+streamlit run test.py 
+```
 
 ## Features 
 
