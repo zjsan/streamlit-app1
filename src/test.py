@@ -138,9 +138,10 @@ def generate_response(prompt,question_parameters):
 
         #prompt template for multiple choice
         #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-        full_prompt = "Generate {} multiple choice questions at a {} difficulty level that test {} knowledge based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+        full_prompt = "Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)# Debugging
 
+        
         response = chatbot.chat(full_prompt)
         return response
 
@@ -148,7 +149,7 @@ def generate_response(prompt,question_parameters):
         
         #prompt template for True or False
         # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
-        full_prompt = "Generate {} statements at a {} difficulty level that test {} knowledge based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+        full_prompt = "Generate {} statements at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)  # Debugging
 
         response = chatbot.chat(full_prompt)
@@ -158,7 +159,7 @@ def generate_response(prompt,question_parameters):
         
         #prompt template for Fill in the Blanks
         # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
-        full_prompt = "Generate {} fill-in-the-blank question items at a {} difficulty level that test {} knowledge  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+        full_prompt = "Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)  # Debugging
 
         response = chatbot.chat(full_prompt)
@@ -168,7 +169,7 @@ def generate_response(prompt,question_parameters):
   elif question_parameters[0] == 'Matching Type':
       #prompt template for Matching Type
       
-      full_prompt = "Generate a matching type question where {} items need to be matched, assessing {} based on this context {}. Ensure the difficulty level is {}. Create two list, one for the questions and one for the choices, questions should be in a number format".format(question_parameters[1], question_parameters[2],prompt,question_parameters[3])
+      full_prompt = "Generate a matching type question where {} items need to be matched, assessing {} cognitive level of bloom's taxonomy based on this context {}. Ensure the difficulty level is {}. Create two list, one for the questions and one for the choices, questions should be in a number format".format(question_parameters[1], question_parameters[2],prompt,question_parameters[3])
       st.write(full_prompt)  # Debugging
 
       response = chatbot.chat(full_prompt)
