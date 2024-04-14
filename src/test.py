@@ -135,21 +135,52 @@ def generate_response(prompt,question_parameters):
   if question_parameters[0] == 'Multiple Choice':
         
         st.write(question_parameters)
-
         #prompt template for multiple choice
-        #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-        full_prompt = "Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-        st.write(full_prompt)# Debugging
+        if question_parameters[2] == 'Remembering':
+            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+           
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example:
+                            **Question:** Who wrote the novel "Noli Me Tangere"?
 
+                               * A) Jose Rizal (Correct Answer)
+                               * B) Andres Bonifacio
+                               * C) Emilio Aguinaldo
+                               * D) Marcelo H. del Pilar
+
+                           **Question:** What is the chemical symbol for oxygen?
+
+                                * A) O (Correct Answer)
+                                * B) H
+                                * C) Au
+                                * D) Na
+                                
+                           **Question:** Question: In which year did the Philippine Revolution against Spanish colonization begin?
+
+                                * A) 1896 (Correct Answer)
+                                * B) 1898
+                                * C) 1872
+                                * D) 1892
+
+                            **Question:** What is the formula for calculating the area of a rectangle?
+
+                               * A) Length * Width (Correct Answer)
+                               * B) Length + Width
+                               * C) Length ÷ Width
+                               * D) Length - Width
+                        '''
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)# Debugging
+            response = chatbot.chat(full_prompt)
+            return response
         
-        response = chatbot.chat(full_prompt)
-        return response
-
   elif question_parameters[0] == 'True or False':
         
         #prompt template for True or False
         # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
-        full_prompt = "Generate {} statements at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+        full_prompt = "Exam questions creation: Generate {} statements at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)  # Debugging
 
         response = chatbot.chat(full_prompt)
@@ -159,7 +190,7 @@ def generate_response(prompt,question_parameters):
         
         #prompt template for Fill in the Blanks
         # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
-        full_prompt = "Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+        full_prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
         st.write(full_prompt)  # Debugging
 
         response = chatbot.chat(full_prompt)
@@ -169,7 +200,7 @@ def generate_response(prompt,question_parameters):
   elif question_parameters[0] == 'Matching Type':
       #prompt template for Matching Type
       
-      full_prompt = "Generate a matching type question where {} items need to be matched, assessing {} cognitive level of bloom's taxonomy based on this context {}. Ensure the difficulty level is {}. Create two list, one for the questions and one for the choices, questions should be in a number format".format(question_parameters[1], question_parameters[2],prompt,question_parameters[3])
+      full_prompt = "Exam questions creation: Generate a matching type question where {} items need to be matched, assessing {} cognitive level of bloom's taxonomy based on this context {}. Ensure the difficulty level is {}. Create two list, one for the questions and one for the choices, questions should be in a number format".format(question_parameters[1], question_parameters[2],prompt,question_parameters[3])
       st.write(full_prompt)  # Debugging
 
       response = chatbot.chat(full_prompt)
