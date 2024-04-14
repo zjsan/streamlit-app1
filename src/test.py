@@ -135,6 +135,7 @@ def generate_response(prompt,question_parameters):
   if question_parameters[0] == 'Multiple Choice':
         
         st.write(question_parameters)
+
         #prompt template for multiple choice
         if question_parameters[2] == 'Remembering':
             #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
@@ -156,7 +157,7 @@ def generate_response(prompt,question_parameters):
                                 * B) H
                                 * C) Au
                                 * D) Na
-                                
+
                            **Question:** Question: In which year did the Philippine Revolution against Spanish colonization begin?
 
                                 * A) 1896 (Correct Answer)
@@ -170,7 +171,112 @@ def generate_response(prompt,question_parameters):
                                * B) Length + Width
                                * C) Length ÷ Width
                                * D) Length - Width
+
                         '''
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)# Debugging
+            response = chatbot.chat(full_prompt)
+            return response
+        
+        elif question_parameters[2] == 'Understanding':
+
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example:
+
+                            **Question:** Which statement best explains the concept of natural selection?
+                            
+                                * A) Animals adapt to their environments over time.
+                                * B) Evolution occurs due to random genetic mutations.
+                                * C) Organisms that are better suited to their environment survive and reproduce. (Correct Answer)
+                                * D) All species share a common ancestor
+                            
+                            **Question:** What is the main idea of the theory of relativity proposed by Albert Einstein?
+
+                                * A) Time travel is possible.
+                                * B) Gravity is caused by the curvature of space-time. (Correct Answer)
+                                * C) Energy cannot be created or destroyed.
+                                * D) Light behaves as both a wave and a particle.
+
+                            **Question:** What is the main idea of the theory of relativity proposed by Albert Einstein?
+
+                            * A) Time travel is possible.
+                            * B) Gravity is caused by the curvature of space-time. (Correct Answer)
+                            * C) Energy cannot be created or destroyed.
+                            * D) Light behaves as both a wave and a particle.
+
+                            **Question:** Which of the following best describes the concept of cultural relativism?
+
+                            * A) All cultures are equally valid.
+                            * B) There are universal moral truths
+                            * C) Cultural norms should be judged based on their own context. (Correct Answer)
+                            * D) Cultural diversity is harmful to society.
+
+                            **Question:** What is the significance of the Magna Carta in English history?
+
+                            * A) It established the principles of democracy.
+                            * B) It granted certain rights to English nobles. (Correct Answer)
+                            * C) It abolished the monarchy.
+                            * D) It declared war on France.
+
+                        '''
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)# Debugging
+            response = chatbot.chat(full_prompt)
+            return response
+        
+
+        elif question_parameters[2] == 'Applying':
+
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example:
+
+                            **Question:** If the radius of a circle is 5 cm, what is its area?
+                            
+                                * A) 10π cm²
+                                * B) 25π cm² (Correct Answer)
+                                * C) 50 cm²
+                                * D) 125π cm²
+                            
+                            **Question:** If a car travels at a constant speed of 60 km/h for 3 hours, how far does it travel?
+
+                                * A) 120 km
+                                * B) 180 km (Correct Answer)
+                                * C) 240 km
+                                * D) 360 km
+
+                            **Question:** Which of the following scenarios best illustrates the concept of opportunity cost?
+
+                            * A) Choosing to spend money on a new phone instead of saving for college.
+                            * B) Spending money on groceries instead of dining out.
+                            * C) Investing in stocks instead of bonds.
+                            * D) Using extra time to study for an exam instead of watching TV. (Correct Answer)
+
+                            **Question:** If a chemical reaction requires 20 grams of reactant A and 30 grams of reactant B, how much product will be produced?
+
+                            * A) 50 grams
+                            * B) 40 grams
+                            * C) 70 grams (Correct Answer)
+                            * D) 100 grams
+
+                            **Question:** In a programming task, if you want to sort an array in ascending order, which algorithm would you most likely use?
+
+                            * A) Bubble Sort
+                            * B) Merge Sort
+                            * C) Quick Sort
+                            * D) All of the above (Correct Answer)
+                        '''
+            
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)# Debugging
+            response = chatbot.chat(full_prompt)
+            return response
+        
+        else:
+            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+
             full_prompt = prompt + few_shot_prompt
             st.write(full_prompt)# Debugging
             response = chatbot.chat(full_prompt)
