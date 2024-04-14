@@ -86,10 +86,10 @@ streamlit run test.py
 
 ## Need To Implement
     1. PDF Upload 
-    2. Login Credentials for Users
+    2. Login Credentials for Users - needed for hugchat api
     3. Database if needed 
     4. Chat History
     5. Multiple Pages and Layouts 
     6. Redesign of Web Components
     7. Landing Page
-    8. Login Page - Redirect to huggingface
+    8. Registration Page - Redirect to huggingface
