@@ -82,6 +82,7 @@ streamlit run test.py
     3. Web layout and Design
     4. Implementation of further features
     5. Bug in the text input
+    6. Further checkin in the model response
 
 ## Need To Implement
     1. PDF Upload 
