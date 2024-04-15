@@ -136,7 +136,7 @@ def generate_response(prompt,question_parameters):
         
         st.write(question_parameters)
 
-        #prompt template for multiple choice
+        #prompt template for multiple choice => aligning cognitive levels thru prompt tuning the model using few-shot learning
         if question_parameters[2] == 'Remembering':
             #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
             prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
@@ -329,6 +329,50 @@ def generate_response(prompt,question_parameters):
             response = chatbot.chat(full_prompt)
             return response
         
+        elif question_parameters[2] == 'Evaluating':
+            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example:
+
+                            **Question:** Which of the following marketing strategies would be most effective in reaching a target audience of young adults?
+                            
+                                * A) Television commercials.
+                                * B) Social media advertising. (Correct Answer)
+                                * C) Newspaper ads.
+                                * D) Billboards.
+                            
+                            **Question:** Which of the following arguments is most convincing in support of renewable energy sources?
+
+                                * A) Renewable energy is environmentally friendly.
+                                * B) Renewable energy creates jobs and stimulates economic growth.
+                                * C) Renewable energy reduces dependence on fossil fuels and decreases greenhouse gas emissions. (Correct Answer)
+                                * D) All of the above.
+
+                            **Question:** Which of the following scenarios presents the greatest ethical dilemma?
+
+                            * A) A doctor falsifies medical records to protect a patient's privacy.
+                            * B) An employee reports a coworker for unethical behavior.
+                            * C) A company knowingly sells a defective product to consumers. (Correct Answer)
+                            * D) A student cheats on an exam to maintain a high GPA.
+
+                            **Question:**  Which of the following criteria would you use to evaluate the effectiveness of a government policy?
+
+                            * A) Economic impact.
+                            * B) Social equity.
+                            * C) Environmental sustainability.
+                            * D) All of the above (Correct Answer)
+
+                        '''
+
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)# Debugging
+            response = chatbot.chat(full_prompt)
+            return response 
+
+      
   elif question_parameters[0] == 'True or False':
         
         #prompt template for True or False
