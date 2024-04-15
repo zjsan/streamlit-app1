@@ -370,7 +370,28 @@ def generate_response(prompt,question_parameters):
             full_prompt = prompt + few_shot_prompt
             st.write(full_prompt)# Debugging
             response = chatbot.chat(full_prompt)
-            return response 
+            return response
+
+        elif question_parameters[2] == 'Creating':
+            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example:
+
+                            **Question:** If you were tasked with designing a new product to solve a common problem, what features would you include?
+
+                                * A) Increased durability and reliability.
+                                * B) User-friendly interface and intuitive design.
+                                * C) Integration of cutting-edge technology.
+                                * D) All of the above (Correct Answer)
+                        '''
+
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)# Debugging
+            response = chatbot.chat(full_prompt)
+            return response
 
       
   elif question_parameters[0] == 'True or False':
