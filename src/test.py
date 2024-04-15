@@ -180,6 +180,9 @@ def generate_response(prompt,question_parameters):
         
         elif question_parameters[2] == 'Understanding':
 
+            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+
             #feeding sample data for the llm for optimization of responses
             few_shot_prompt = '''
                             For example:
@@ -228,6 +231,9 @@ def generate_response(prompt,question_parameters):
 
         elif question_parameters[2] == 'Applying':
 
+            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+            
             #feeding sample data for the llm for optimization of responses
             few_shot_prompt = '''
                             For example:
@@ -304,8 +310,8 @@ def generate_response(prompt,question_parameters):
   
     
   elif question_parameters[0] == 'Matching Type':
-      #prompt template for Matching Type
       
+      #prompt template for Matching Type
       full_prompt = "Exam questions creation: Generate a matching type question where {} items need to be matched, assessing {} cognitive level of bloom's taxonomy based on this context {}. Ensure the difficulty level is {}. Create two list, one for the questions and one for the choices, questions should be in a number format".format(question_parameters[1], question_parameters[2],prompt,question_parameters[3])
       st.write(full_prompt)  # Debugging
 
