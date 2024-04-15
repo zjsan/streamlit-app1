@@ -233,7 +233,7 @@ def generate_response(prompt,question_parameters):
 
             #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
             prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-            
+
             #feeding sample data for the llm for optimization of responses
             few_shot_prompt = '''
                             For example:
@@ -279,9 +279,50 @@ def generate_response(prompt,question_parameters):
             response = chatbot.chat(full_prompt)
             return response
         
-        else:
+        elif question_parameters[2] == 'Analyzing':
+
             #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
             prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example:
+
+                            **Question:**  Which of the following best explains the significance of a control group in an experiment?
+                            
+                                * A) It ensures that the experiment is conducted ethically.
+                                * B) It provides a baseline for comparison to determine the effect of the independent variable. (Correct Answer)
+                                * C) It allows researchers to make predictions about future outcomes
+                                * D) It ensures that the results of the experiment are valid.
+                            
+                            **Question:** In a scientific experiment investigating plant growth, which of the following variables would be considered the independent variable?
+
+                                * A) The type of soil used
+                                * B) The amount of sunlight received.
+                                * C) The frequency of watering.
+                                * D)  The presence or absence of fertilizer. (Correct Answer)
+
+                            **Question:** Given the graph of a quadratic function, which of the following statements about its vertex is true?
+
+                            * A) It is the highest point on the graph
+                            * B) It lies on the x-axis.
+                            * C) It is the point where the derivative is zero. (Correct Answer)
+                            * D) It is always at the origin.
+
+                            **Question:** if g(x) = √x+4, what is the domain of the function?
+
+                            * A) x ≥ -4 (Correct Answer)
+                            * B) x ≤ -4
+                            * C) x > 4
+                            * D) x < -4
+
+                            **Question:** When analyzing the efficiency of algorithms, which of the following factors is most important to consider?
+
+                            * A) Syntax
+                            * B) Runtime complexity (Correct Answer)
+                            * C) Variable naming conventions
+                            * D) Code readability
+                        '''
 
             full_prompt = prompt + few_shot_prompt
             st.write(full_prompt)# Debugging
