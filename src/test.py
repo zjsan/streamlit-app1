@@ -104,15 +104,13 @@ def question_params():
 
 #Session creation
 if 'generated' not in st.session_state:
-    st.session_state['generated'] = ["How may I help you?"]
+    st.session_state['generated'] = ["Here is the generated questions"]
 if 'past' not in st.session_state:
     st.session_state['past'] = ['Hi!']
 
 input_container = st.container()
 #colored_header(label='', description='', color_name='blue-30')
 response_container = st.container()
-
-
 
 
 #generation of the response from the LLM
@@ -144,6 +142,7 @@ def generate_response(prompt,question_parameters):
             #feeding sample data for the llm for optimization of responses
             few_shot_prompt = '''
                             For example:
+
                             **Question:** Who wrote the novel "Noli Me Tangere"?
 
                                * A) Jose Rizal (Correct Answer)
@@ -273,7 +272,8 @@ def generate_response(prompt,question_parameters):
                             * C) Quick Sort
                             * D) All of the above (Correct Answer)
                         '''
-            
+
+
             full_prompt = prompt + few_shot_prompt
             st.write(full_prompt)# Debugging
             response = chatbot.chat(full_prompt)
@@ -454,5 +454,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
