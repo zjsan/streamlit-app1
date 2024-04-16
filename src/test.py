@@ -386,8 +386,21 @@ def generate_response(prompt,question_parameters):
                                 * B) User-friendly interface and intuitive design.
                                 * C) Integration of cutting-edge technology.
                                 * D) All of the above (Correct Answer)
-                        '''
 
+                            **Question:** You have been tasked with designing a mobile app to help students learn programming concepts. Which of the following features would you prioritize to ensure an engaging and effective learning experience?
+
+                                * A) A virtual coding playground where students can write and test their code.
+                                * B) Interactive tutorials with step-by-step instructions and real-world examples. (Correct Answer)
+                                * C) A leaderboard to track students' progress and encourage healthy competition.
+                                * D) Social media integration for students to share their coding achievements with friends.
+
+                            **Question:** Imagine you are planning a science fair project to investigate the effects of different types of soil on plant growth. Which of the following experimental designs would be most suitable for testing your hypothesis?
+
+                                * A) Watering plants with varying amounts of water daily.
+                                * B) Using identical pots and seeds but different types of soil for each group. (Correct Answer)
+                                * C) Keeping all variables constant except for the amount of sunlight received.
+                                * D) Observing plants grown in different locations around the school.
+                        '''
             full_prompt = prompt + few_shot_prompt
             st.write(full_prompt)# Debugging
             response = chatbot.chat(full_prompt)
