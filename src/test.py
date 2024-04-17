@@ -400,6 +400,13 @@ def generate_response(prompt,question_parameters):
                                 * B) Using identical pots and seeds but different types of soil for each group. (Correct Answer)
                                 * C) Keeping all variables constant except for the amount of sunlight received.
                                 * D) Observing plants grown in different locations around the school.
+
+                            **Question:** Suppose you are developing a website for a local business. Which of the following design elements would you include to enhance user experience and accessibility?
+
+                                * A) High-resolution images and flashy animations.
+                                * B) Clear navigation menus and intuitive layout. (Correct Answer)
+                                * C) Auto-playing videos and background music.
+                                * D) Hidden content that requires users to hover over certain areas to reveal.   
                         '''
             full_prompt = prompt + few_shot_prompt
             st.write(full_prompt)# Debugging
@@ -409,13 +416,45 @@ def generate_response(prompt,question_parameters):
       
   elif question_parameters[0] == 'True or False':
         
-        #prompt template for True or False
-        # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
-        full_prompt = "Exam questions creation: Generate {} statements at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-        st.write(full_prompt)  # Debugging
+        if question_parameters[2] == 'Remembering':
 
-        response = chatbot.chat(full_prompt)
-        return response
+            # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
+            prompt = "Exam questions creation: Generate {} statements at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example: 
+                            
+                            **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item
+
+                            **Question:** **_____** The sum of the interior angles of a triangle is 180 degrees.    
+
+                                *Answer: True
+                            
+                            **Question:** **_____** Water boils at 100 degrees Celsius at sea level.    
+
+                                *Answer: True
+                            
+                                      
+                            **Question:** **_____** HTML is a programming language. 
+
+                                *Answer: False
+
+                            **Question:** **_____** A prime number is divisible by only one and itself.
+
+                                *Answer: True
+                            
+                            **Question:** **_____**  Photosynthesis is the process by which plants convert carbon dioxide and water into oxygen and glucose.
+
+                                *Answer: True
+
+                            '''
+
+            #prompt template for True or False
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)  # Debugging
+
+            response = chatbot.chat(full_prompt)
+            return response
   
   elif question_parameters[0] == 'Fill in the Blanks':
         
