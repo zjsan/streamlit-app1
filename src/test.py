@@ -43,6 +43,7 @@ def question_params():
     #condition for question type
     if question_type == 'Multiple Choice':
         st.write('Multiple choice')
+        st.write('Multiple-Choice Questions are versatile and can be used across various cognitive domains')
         question_params.append(question_type)   
     elif question_type == 'True or False':
         st.write('True or False')
@@ -606,7 +607,7 @@ def main():
         else:
             st.write('Bad')
         
-        user_message = st.text_input("Enter text context:", key="input") # taking user provided prompt as input
+        user_message = st.chat_input("Enter text context:", key="input") # taking user provided prompt as input
         if st.button("Submit") and user_message != " ":
             response_ai(user_message, additional_prompts)
 
