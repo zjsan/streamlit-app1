@@ -53,9 +53,6 @@ def question_params():
     elif question_type == 'Fill in the Blanks':
         st.write('Fill in the Blanks')
         question_params.append(question_type)
-    elif question_type == 'Matching Type':
-        st.write('Matching Type')
-        question_params.append(question_type)
     else:
         st.write('Select Question type') 
     
@@ -551,7 +548,7 @@ def generate_response(prompt,question_parameters):
         response = chatbot.chat(full_prompt)
         return response 
       
-      elif question_parameters[2] == 'Applying':
+      elif question_parameters[2] == 'Applying':    
         #prompt template for Fill in the Blanks
         # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
         prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
@@ -571,7 +568,7 @@ def generate_response(prompt,question_parameters):
         return response
       
       else:
-        
+
         #prompt template for Fill in the Blanks
         # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
         prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
@@ -579,16 +576,6 @@ def generate_response(prompt,question_parameters):
         response = chatbot.chat(prompt)
         return response
           
-  elif question_parameters[0] == 'Matching Type':
-      
-      #prompt template for Matching Type
-      full_prompt = "Exam questions creation: Generate a matching type question where {} items need to be matched, assessing {} cognitive level of bloom's taxonomy based on this context {}. Ensure the difficulty level is {}. Create two list, one for the questions and one for the choices, questions should be in a number format".format(question_parameters[1], question_parameters[2],prompt,question_parameters[3])
-      st.write(full_prompt)  # Debugging
-
-      response = chatbot.chat(full_prompt)
-      return response 
-  else:
-        st.write('Please Check your inputs')
 
 ## Conditional display of AI generated responses as a function of user provided prompts
 #printings
