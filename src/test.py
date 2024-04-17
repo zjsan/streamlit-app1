@@ -90,6 +90,7 @@ def question_params():
     else:
         st.write('Select Taxonomy Level') 
 
+
     #difficulty level
     difficulty = st.selectbox(
     "Question Difficulty",
@@ -98,7 +99,7 @@ def question_params():
     placeholder="Select difficulty level...",
     )
     question_params.append(difficulty)
-
+       
     return question_params
         
 
@@ -494,6 +495,10 @@ def generate_response(prompt,question_parameters):
 
             response = chatbot.chat(full_prompt)
             return response
+        else:
+            st.write("True or false questions are typically best suited for assessing the remembering and understanding levels of Bloom's taxonomy.")
+            st.write('Please select the appropriate cognitive level')
+            return False
   
   elif question_parameters[0] == 'Fill in the Blanks':
         
@@ -537,7 +542,12 @@ def main():
         # User input
         additional_prompts = list(question_params())
         print(additional_prompts)   
-        st.write(additional_prompts)#checking the index location of the additional prompts
+        st.write(additional_prompts)#checking the index location of the additional promptsg
+
+        if 'True or False' in additional_prompts and 'Remembering' in additional_prompts or 'Understanding' in additional_prompts:
+            st.write('Good')
+        else:
+            st.write('Bad')
         
         user_message = st.text_input("Enter text context:", key="input") # taking user provided prompt as input
         if st.button("Submit") and user_message != " ":
