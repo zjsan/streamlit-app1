@@ -419,14 +419,14 @@ def generate_response(prompt,question_parameters):
         if question_parameters[2] == 'Remembering':
 
             # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
-            prompt = "Exam questions creation: Generate {} statements at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+            prompt = "Exam questions creation: Generate {} True or False test questions at a {} difficulty level that is align with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer use this format: ".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
             #feeding sample data for the llm for optimization of responses
             few_shot_prompt = '''
                             For example: 
                             
-                            **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item
+                            **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item.
 
-                            **Question:** **_____** The sum of the interior angles of a triangle is 180 degrees.    
+                            **Question:** **Create 4 underscores for the supposed answer** The sum of the interior angles of a triangle is 180 degrees.    
 
                                 *Answer: True
                             
