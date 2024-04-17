@@ -35,7 +35,7 @@ def question_params():
     #question type
     question_type = st.selectbox(
     "Question Type",
-    ("Multiple Choice", "True or False", "Fill in the Blanks","Matching Type"),
+    ("Multiple Choice", "True or False", "Fill in the Blanks"),
     index=None,
     placeholder="Select question type...",
     )
@@ -52,6 +52,8 @@ def question_params():
         question_params.append(question_type)
     elif question_type == 'Fill in the Blanks':
         st.write('Fill in the Blanks')
+        st.write("A fill-in-the-blank type of test question can be effective for assessing cognitive levels ranging from remembering to applying.")
+        st.write('Please select the appropriate cognitive level')
         question_params.append(question_type)
     else:
         st.write('Select Question type') 
