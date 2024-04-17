@@ -455,6 +455,45 @@ def generate_response(prompt,question_parameters):
 
             response = chatbot.chat(full_prompt)
             return response
+
+        elif question_parameters[2] == 'Understanding':
+
+            # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
+            prompt = "Exam questions creation: Generate {} True or False test questions at a {} difficulty level that is align with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer use this format: ".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+
+            #feeding sample data for the llm for optimization of responses
+            few_shot_prompt = '''
+                            For example: 
+                            
+                            **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item.
+
+                            **Question:** **Create 4 underscores for the supposed answer** If a triangle has sides of lengths 3, 4, and 5 units, it is a right triangle..    
+
+                                *Answer: True
+                            
+                            **Question:** **_____** Electrons are negatively charged particles found in the nucleus of an atom.
+
+                                *Answer: False
+
+                            **Question:** **_____** Object-oriented programming focuses on breaking down a program into small, reusable pieces called functions.
+
+                                *Answer: False
+                            
+                            **Question:** **_____** The equation y = mx + b represents a linear function.
+
+                                *Answer: True
+                            
+                            **Question:** **_____** Newton's first law of motion states that an object at rest will remain at rest unless acted upon by an unbalanced force.
+
+                                *Answer: True    
+                            '''
+
+            #prompt template for True or False
+            full_prompt = prompt + few_shot_prompt
+            st.write(full_prompt)  # Debugging
+
+            response = chatbot.chat(full_prompt)
+            return response
   
   elif question_parameters[0] == 'Fill in the Blanks':
         
