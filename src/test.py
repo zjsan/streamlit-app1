@@ -496,6 +496,8 @@ def generate_response(prompt,question_parameters):
             response = chatbot.chat(full_prompt)
             return response
         else:
+
+            #need to implement better mechanism for the true or false than this 
             st.write("True or false questions are typically best suited for assessing the remembering and understanding levels of Bloom's taxonomy.")
             st.write('Please select the appropriate cognitive level')
             return False
