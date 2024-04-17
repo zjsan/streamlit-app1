@@ -46,6 +46,9 @@ def question_params():
         question_params.append(question_type)   
     elif question_type == 'True or False':
         st.write('True or False')
+        #need to implement better mechanism for the true or false than this 
+        st.write("True or false questions are typically best suited for assessing the remembering and understanding levels of Bloom's taxonomy.")
+        st.write('Please select the appropriate cognitive level')
         question_params.append(question_type)
     elif question_type == 'Fill in the Blanks':
         st.write('Fill in the Blanks')
@@ -61,6 +64,7 @@ def question_params():
     question_params.append(question_number)#add number of items
     
     #taxomy level
+    #need to disable processing for True or False != Remembering and True or False != Understanding
     taxonomy_level = st.selectbox(
     "Taxonomy Level",
     ("Remembering", "Understanding", "Applying", "Analyzing", "Evaluating", "Creating"),
@@ -495,12 +499,9 @@ def generate_response(prompt,question_parameters):
 
             response = chatbot.chat(full_prompt)
             return response
+        
         else:
-
-            #need to implement better mechanism for the true or false than this 
-            st.write("True or false questions are typically best suited for assessing the remembering and understanding levels of Bloom's taxonomy.")
-            st.write('Please select the appropriate cognitive level')
-            return False
+            return False 
   
   elif question_parameters[0] == 'Fill in the Blanks':
         
