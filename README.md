@@ -83,6 +83,8 @@ streamlit run test.py
     4. Implementation of further features
     5. Bug in the text input
     6. Further checkin in the model response
+    7. Need to disable processing for True or False != Remembering and True or False != Understanding
+
 
 ## Need To Implement
     1. PDF Upload 
