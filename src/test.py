@@ -568,6 +568,7 @@ def generate_response(prompt,question_parameters):
         full_prompt = prompt + few_shot_prompt
         st.write(full_prompt)  # Debugging
         response = chatbot.chat(full_prompt)
+
         return response
       
       else:
@@ -586,6 +587,32 @@ def response_ai(user_message, additional_prompts):
     with response_container:
         if user_message:
             response = generate_response(user_message,additional_prompts)
+            response_text = str(response)
+            st.write(response_text)
+            # Parse the LLM response to extract questions, choices, and answers
+            questions = []
+            question = None
+            choices = []
+            answer = None
+            for line in response_text.splitlines():
+                if line.startswith("**Question:**"):
+                    question = line.split("**Question:** ")[1].strip()
+                    choices = []
+                    answer = None
+                elif line.startswith("* "):
+                    choice = line.strip("* ")
+                    if choice.endswith("(Correct Answer)"):
+                        choice = choice[:-len("(Correct Answer)")]
+                        answer = choice
+                    choices.append(choice)
+                # Add the question object to the list if all parts are found
+                elif question and choices and answer:
+                    questions.append({
+                        "question": question,
+                        "choices": choices,
+                        "answer": answer
+                    })
+            st.write(questions)
             st.session_state.past.append(user_message)
             st.session_state.generated.append(response)
             
@@ -600,17 +627,15 @@ def main():
         # User input
         additional_prompts = list(question_params())
         print(additional_prompts)   
-        st.write(additional_prompts)#checking the index location of the additional promptsg
-
-        if 'True or False' in additional_prompts and 'Remembering' in additional_prompts or 'Understanding' in additional_prompts:
-            st.write('Good')
-        else:
-            st.write('Bad')
+        st.write(additional_prompts)#checking the index location of the additional prompts
         
-        user_message = st.text_area("Enter text context:", key="input") # taking user provided prompt as input
-        if st.button("Submit") and user_message != " ":
-            response_ai(user_message, additional_prompts)
-
+        #if user enters needed parameters => enable text input for context
+        if  additional_prompts:
+            user_message = st.text_area("Enter text context:") # taking user provided prompt as input
+            if st.button("Submit") and user_message != " ":
+                with st.spinner('Wait for it...'):
+                    response_ai(user_message, additional_prompts)
+        
 if __name__ == "__main__":
     main()
 
