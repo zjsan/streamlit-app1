@@ -607,10 +607,9 @@ def main():
         else:
             st.write('Bad')
         
-        user_message = st.chat_input("Enter text context:", key="input") # taking user provided prompt as input
-        if st.button("Submit") and user_message:
-            with st.spinner('Generating...'):
-                response_ai(user_message, additional_prompts)
+        user_message = st.text_area("Enter text context:", key="input") # taking user provided prompt as input
+        if st.button("Submit") and user_message != " ":
+            response_ai(user_message, additional_prompts)
 
 if __name__ == "__main__":
     main()
