@@ -3,7 +3,7 @@ from hugchat import hugchat
 from hugchat.login import Login
 from dotenv import dotenv_values
 
-st.set_page_config(page_title="🤗💬 Cognicraft")
+st.set_page_config(page_title="Cognicraft")
 
 secrets = dotenv_values('hf.env')
 
@@ -15,6 +15,13 @@ cookie_path_dir = "./cookies"
 sign = Login(hf_email, hf_pass)
 cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
 
+#Session creation
+if 'generated' not in st.session_state:
+    st.session_state['generated'] = ["Here is the generated questions"]
+if 'past' not in st.session_state:
+    st.session_state['past'] = ['Hi!']
+if 'question_history' not in st.session_state:
+    st.session_state['question_history'] = []
 
 with st.sidebar:
     st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
@@ -26,6 +33,13 @@ with st.sidebar:
      - [OpenAssistant/oasst-sft-6-llama-30b-xor](<https://huggingface.co/OpenAssistant/oasst-sft-6-llama-30b-xor>) LLM model
     ''')
 
+    if st.session_state['question_history']:
+        for question_set in st.session_state['question_history']:
+            st.sidebar.write(question_set)
+    else:
+        st.sidebar.write("No question history yet.")
+
+    
 def question_params():
 
 
@@ -106,13 +120,6 @@ def question_params():
        
     return question_params
         
-
-#Session creation
-if 'generated' not in st.session_state:
-    st.session_state['generated'] = ["Here is the generated questions"]
-if 'past' not in st.session_state:
-    st.session_state['past'] = ['Hi!']
-
 input_container = st.container()
 #colored_header(label='', description='', color_name='blue-30')
 response_container = st.container()
@@ -587,34 +594,9 @@ def response_ai(user_message, additional_prompts):
     with response_container:
         if user_message:
             response = generate_response(user_message,additional_prompts)
-            response_text = str(response)
-            st.write(response_text)
-            # Parse the LLM response to extract questions, choices, and answers
-            questions = []
-            question = None
-            choices = []
-            answer = None
-            for line in response_text.splitlines():
-                if line.startswith("**Question:**"):
-                    question = line.split("**Question:** ")[1].strip()
-                    choices = []
-                    answer = None
-                elif line.startswith("* "):
-                    choice = line.strip("* ")
-                    if choice.endswith("(Correct Answer)"):
-                        choice = choice[:-len("(Correct Answer)")]
-                        answer = choice
-                    choices.append(choice)
-                # Add the question object to the list if all parts are found
-                elif question and choices and answer:
-                    questions.append({
-                        "question": question,
-                        "choices": choices,
-                        "answer": answer
-                    })
-            st.write(questions)
             st.session_state.past.append(user_message)
             st.session_state.generated.append(response)
+            st.session_state.question_history(response)
             
         if st.session_state['generated']:
             for i in range(len(st.session_state['generated'])):
