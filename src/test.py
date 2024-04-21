@@ -20,8 +20,6 @@ if 'generated' not in st.session_state:
     st.session_state['generated'] = ["Here is the generated questions"]
 if 'past' not in st.session_state:
     st.session_state['past'] = ['Hi!']
-if 'question_history' not in st.session_state:
-    st.session_state['question_history'] = []
 
 with st.sidebar:
     st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
@@ -32,12 +30,6 @@ with st.sidebar:
     - [HugChat](<https://github.com/Soulter/hugging-chat-api>)
      - [OpenAssistant/oasst-sft-6-llama-30b-xor](<https://huggingface.co/OpenAssistant/oasst-sft-6-llama-30b-xor>) LLM model
     ''')
-
-    if st.session_state['question_history']:
-        for question_set in st.session_state['question_history']:
-            st.sidebar.write(question_set)
-    else:
-        st.sidebar.write("No question history yet.")
 
     
 def question_params():
@@ -596,13 +588,12 @@ def response_ai(user_message, additional_prompts):
             response = generate_response(user_message,additional_prompts)
             st.session_state.past.append(user_message)
             st.session_state.generated.append(response)
-            st.session_state.question_history(response)
             
         if st.session_state['generated']:
             for i in range(len(st.session_state['generated'])):
                 st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
                 st.write(st.session_state['generated'][i], key=str(i))
-
+        
 def main():
     # Applying the user input box
     with input_container:
@@ -620,6 +611,5 @@ def main():
         
 if __name__ == "__main__":
     main()
-
 
 
