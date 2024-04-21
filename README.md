@@ -42,6 +42,12 @@ dotenv
 ```
 pip install python-dotenv
 ```
+```
+pip install streamlit-authenticator
+```
+```
+pip install mysql-connector-python
+```
 ## Documentation
 
 The project is running in a virtual environment 
