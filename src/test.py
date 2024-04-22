@@ -103,6 +103,19 @@ def show_auth_page():
                                 st.warning('Passwords does not matched')
                         else:
                             st.error('Please Fill up the form')         
+
+
+def main_section():
+     st.write(f"Welcome, {st.session_state['username']}!")
+
+def showlogout_page():
+    auth_section.empty()
+    with logout_section:
+        st.button('Logout', key='logout', on_click=logout_clicked)
+
+def logout_clicked():
+    st.session_state['email'] = None
+  
 with header_section:
     if 'email' not in st.session_state:
         st.session_state['email'] = None
