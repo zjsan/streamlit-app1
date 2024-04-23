@@ -27,19 +27,15 @@ logout_section = st.container()
 #creating user session
 if 'email' not in st.session_state:
     st.session_state['email'] = None #initial value of the session since no login yet
+    st.session_state['user'] = False
 
 def show_auth_page():
     with auth_section:
         # Login/Registration Section
         if st.session_state['email'] is None:
-
-            #-------login part-------------
-            login_email = st.text_input("Email")
-            login_password = st.text_input("Password", type="password")
-            login_clicked = st.button("Login")
-
+            #see code at line 68 first
             #login functionality and logic
-            if login_clicked:
+            def login_functionality():
                 if login_email and login_password:
                     try:
                         #etablishing connection to the database
@@ -56,9 +52,10 @@ def show_auth_page():
 
                             if str(login_password) == str(password_db):
                                 st.session_state['email'] = login_email
+                                st.session_state['user'] = True
                                 st.success("Login successful!")
                             else:
-                                st.error("Incorrect username or password.")
+                                st.error("Incorrect password.")
                         else:
                             st.error("Email not found.")
                         cursor.close()
@@ -68,9 +65,17 @@ def show_auth_page():
                 else:
                     st.warning("Please enter username and password.")
 
+
+            #-------login form part-------------
+            login_email = st.text_input("Email")
+            login_password = st.text_input("Password", type="password")
+            st.button("Login", key='login',on_click=login_functionality)
+
+           
             #--------registration part------
             if st.checkbox("Register here"):
                 st.write('Please Register using  your Hugging Face Credentials')
+                st.write('Hugging Face Credentials: ')
                 with st.form("registration_form"):
                     email = st.text_input("Email")
                     new_password = st.text_input("Password", type="password")
@@ -105,8 +110,9 @@ def show_auth_page():
                             st.error('Please Fill up the form')         
 
 
-def main_section():
-     st.write(f"Welcome, {st.session_state['username']}!")
+def show_main_section():
+     with main_section:
+        st.write(f"Welcome, {st.session_state['email']}!")
 
 def showlogout_page():
     auth_section.empty()
@@ -115,14 +121,15 @@ def showlogout_page():
 
 def logout_clicked():
     st.session_state['email'] = None
+    st.session_state['user'] = False
   
 with header_section:
     if 'email' not in st.session_state:
         st.session_state['email'] = None
         show_auth_page()
     else:
-        if st.session_state['email']:
-            logout_section()
-            main_section()
+        if st.session_state['email'] and st.session_state['user']:
+            showlogout_page()
+            show_main_section()
         else:
             show_auth_page()
