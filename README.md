@@ -53,7 +53,7 @@ pip install extra-streamlit-components
 ```
 ## Documentation
 
-The project is running in a virtual environment 
+This project is being develop in a virtual environment 
 ```
 https://code.visualstudio.com/docs/python/environments
 ```
