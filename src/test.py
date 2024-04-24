@@ -24,10 +24,13 @@ main_section = st.container()
 auth_section = st.container()
 logout_section = st.container()
 
-#creating user session
+#creating user session states
 if 'email' not in st.session_state:
     st.session_state['email'] = None #initial value of the session since no login yet
+if 'user' not in st.session_state:
     st.session_state['user'] = False
+if 'login' not in st.session_state:
+    st.session_state['login'] = False
 
 def show_auth_page():
     with auth_section:
@@ -47,12 +50,13 @@ def show_auth_page():
                         #accessing user password
                         if user:
                             password_db = user[2]  # Retrieve password hash from database
-                            st.write(password_db)
-                            st.write(login_password)
+                            st.write(password_db)# for debugging
+                            st.write(login_password)#for debugging 
 
                             if str(login_password) == str(password_db):
                                 st.session_state['email'] = login_email
                                 st.session_state['user'] = True
+                                st.session_state['login'] = True
                                 st.success("Login successful!")
                             else:
                                 st.error("Incorrect password.")
@@ -122,10 +126,10 @@ def showlogout_page():
 def logout_clicked():
     st.session_state['email'] = None
     st.session_state['user'] = False
+    st.session_state['login'] = False
   
 with header_section:
-    if 'email' not in st.session_state:
-        st.session_state['email'] = None
+    if 'email' not in st.session_state and 'user' not in st.session_state and 'login' not in st.session_state:
         show_auth_page()
     else:
         if st.session_state['email'] and st.session_state['user']:
