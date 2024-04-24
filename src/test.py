@@ -1,6 +1,6 @@
 import streamlit as st
 import mysql.connector
-
+import datetime
 
 def get_db_connection():
   #connect to the database
@@ -18,6 +18,11 @@ def get_db_connection():
         print("Error connecting to database:", err)
         return None  # Or raise a custom exception
   
+#@st.cache_resource
+#def get_manager():
+ #   return stx.CookieManager()
+
+#cookie_manager = get_manager()
 
 header_section = st.container()
 main_section = st.container()
@@ -29,13 +34,16 @@ if 'email' not in st.session_state:
     st.session_state['email'] = None #initial value of the session since no login yet
 if 'user' not in st.session_state:
     st.session_state['user'] = False
-if 'login' not in st.session_state:
-    st.session_state['login'] = False
 
+#global variables
+active_status = 0 #global variable to store the active status of the user 
+initial_login_email = ""
 def show_auth_page():
     with auth_section:
         # Login/Registration Section
         if st.session_state['email'] is None:
+            st.write(f"User session state value: {st.session_state['user']}")#for debugging
+            st.write(f"Active Status value: {active_status}")#for debuggin
             #see code at line 68 first
             #login functionality and logic
             def login_functionality():
@@ -52,12 +60,14 @@ def show_auth_page():
                             password_db = user[2]  # Retrieve password hash from database
                             st.write(password_db)# for debugging
                             st.write(login_password)#for debugging 
-
                             if str(login_password) == str(password_db):
-                                st.session_state['email'] = login_email
-                                st.session_state['user'] = True
-                                st.session_state['login'] = True
+                                st.session_state.email = login_email
+                                st.session_state.user = True
+                                #active_status = 1
+                                #cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status,login_email))
+                               # db.commit()
                                 st.success("Login successful!")
+
                             else:
                                 st.error("Incorrect password.")
                         else:
@@ -69,6 +79,7 @@ def show_auth_page():
                 else:
                     st.warning("Please enter username and password.")
 
+           
 
             #-------login form part-------------
             login_email = st.text_input("Email")
@@ -116,20 +127,37 @@ def show_auth_page():
 
 def show_main_section():
      with main_section:
-        st.write(f"Welcome, {st.session_state['email']}!")
+        st.write(f"Active Status value: {active_status}")#for debuggin
+        while active_status:
+            st.write(f"Welcome, {st.session_state['email']}!")
+            st.write(f"User session state value: {st.session_state['user']}")#for debugging
+            st.write(f"Active Status value: {active_status}")#for debuggin
 
 def showlogout_page():
+
+   # initial_login_email =  st.session_state['email']#use for logout
+    st.write(initial_login_email)
     auth_section.empty()
     with logout_section:
-        st.button('Logout', key='logout', on_click=logout_clicked)
+        st.button('Logout', key='logout', on_click=logout_clicked(initial_login_email))
 
-def logout_clicked():
-    st.session_state['email'] = None
-    st.session_state['user'] = False
-    st.session_state['login'] = False
-  
+def logout_clicked(login_email_after_session):
+
+    #logout logic and functionality
+    st.session_state.email = None     
+    st.session_state.user = False
+    active_status = 0
+   # db = get_db_connection()
+    #cursor = db.cursor()
+   # show_auth_page()
+   # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status,login_email_after_session))
+   # db.commit()
+   # cursor.close()
+   # db.close()
+
+#main control flow 
 with header_section:
-    if 'email' not in st.session_state and 'user' not in st.session_state and 'login' not in st.session_state:
+    if 'email' not in st.session_state and 'user' not in st.session_state:
         show_auth_page()
     else:
         if st.session_state['email'] and st.session_state['user']:
