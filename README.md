@@ -43,13 +43,7 @@ dotenv
 pip install python-dotenv
 ```
 ```
-pip install streamlit-authenticator
-```
-```
 pip install mysql-connector-python
-```
-```
-pip install extra-streamlit-components
 ```
 ## Documentation
 
