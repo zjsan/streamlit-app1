@@ -72,7 +72,13 @@ hf.env - same directory level with test.py
 To launch the application simply the following command:
 ```
 
-streamlit run test.py 
+streamlit run title.py 
+```
+
+## Applications
+``` 
+  1. main.py - llm model
+  2. test.py - testing of authentication(testing program for development)
 ```
 
 ## Features 
