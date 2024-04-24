@@ -84,7 +84,7 @@ streamlit run test.py
     5. Flexible Web Layout
 
 
-## Errors and Bugs
+## Errors and Bugs - need further update for implementation
 
     1. Additional Testing in the buttons and Inout fields
     2. Further assurance of the generated Questions
@@ -95,7 +95,7 @@ streamlit run test.py
     7. Need to disable processing for True or False != Remembering and True or False != Understanding
 
 
-## Need To Implement
+## Need To Implement- need further update for implementation
     1. PDF Upload 
     2. Login Credentials for Users - needed for hugchat api
     3. Database if needed 
