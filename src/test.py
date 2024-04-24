@@ -1,6 +1,5 @@
 import streamlit as st
 import mysql.connector
-import datetime
 
 def get_db_connection():
   #connect to the database
@@ -31,9 +30,9 @@ logout_section = st.container()
 
 #creating user session states
 if 'email' not in st.session_state:
-    st.session_state['email'] = None #initial value of the session since no login yet
+    st.session_state.email = None #initial value of the session since no login yet
 if 'user' not in st.session_state:
-    st.session_state['user'] = False
+    st.session_state.user = False
 
 #global variables
 active_status = 0 #global variable to store the active status of the user 
