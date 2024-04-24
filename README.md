@@ -61,6 +61,9 @@ Streamlit: https://streamlit.io/
 hf.env - same directory level with test.py
        - change contents of email and password based in the huggingface credentials
 
+MYSQL: Application's Database
+Xampp Control Panel
+
 ## Launch
 
 To launch the application simply the following command:
@@ -74,7 +77,6 @@ streamlit run title.py
   1. main.py - llm model
   2. test.py - testing of authentication(testing program for development)
 ```
-
 ## Features 
 
     1. Generate Questions Based on the question type
