@@ -43,7 +43,7 @@ def show_auth_page():
         if st.session_state['email'] is None:
             st.write(f"User session state value: {st.session_state['user']}")#for debugging
             st.write(f"Active Status value: {active_status}")#for debuggin
-            #see code at line 68 first
+            #see code at line 81 first
             #login functionality and logic
             def login_functionality():
                 if login_email and login_password:
@@ -77,8 +77,6 @@ def show_auth_page():
                         st.error(f"Error connecting to database: {e}")
                 else:
                     st.warning("Please enter username and password.")
-
-           
 
             #-------login form part-------------
             login_email = st.text_input("Email")
