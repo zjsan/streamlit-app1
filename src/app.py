@@ -45,7 +45,7 @@ def show_auth_page():
             st.write(f"Active Status value: {active_status}")#for debuggin
             #see code at line 81 first
             #login functionality and logic
-            def login_functionality():
+            def login_functionality(login_email,login_password):
                 if login_email and login_password:
                     try:
                         #etablishing connection to the database
@@ -81,7 +81,7 @@ def show_auth_page():
             #-------login form part-------------
             login_email = st.text_input("Email")
             login_password = st.text_input("Password", type="password")
-            st.button("Login", key='login',on_click=login_functionality)
+            st.button("Login", key='login',on_click=login_functionality, args=(login_email,login_password))
 
            
             #--------registration part------
@@ -128,10 +128,14 @@ def show_main_section():
             st.write(f"Active Status value: {active_status}")#for debuggin
             st.write(f"Welcome, {st.session_state['email']}!")
             st.write(f"User session state value: {st.session_state['user']}")#for debugging
-            st.write(f"Active Status value: {active_status}")#for debuggin
+            st.write(f"Active Status value: {active_status}")#for debugging
+            
+            hello_button = st.button('hello')
+            
+            if hello_button:
+                st.write('okay')#not executing this line
 
 def showlogout_page():
-
    # initial_login_email =  st.session_state['email']#use for logout
     st.write(initial_login_email)
     auth_section.empty()
