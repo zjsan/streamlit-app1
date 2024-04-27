@@ -161,6 +161,11 @@ def logout_clicked():
     #logout logic and functionality
     st.session_state.email = None     
     st.session_state.user = False
+    login_token = None
+    # Clear login token from local storage
+    js_code = """localStorage.removeItem('loginToken');"""
+    st.write('<script>' + js_code + '</script>', unsafe_allow_html=True)
+    # Reset session state variables
    # active_status = 0
    # db = get_db_connection()
     #cursor = db.cursor()
@@ -172,18 +177,21 @@ def logout_clicked():
 
 #main control flow 
 with header_section:
-    if 'email' not in st.session_state and 'user' not in st.session_state:
+    if 'email' not in st.session_state and 'user' not in st.session_state and login_token == None:
         # Clear main section
         main_section.empty()
         show_auth_page()
+        st.stop()
     else:
         if st.session_state.email and st.session_state.user and login_token:
             show_main_section()
             showlogout_page()
         else:
+            # Check for existing login token on every page load
             if 'loginToken' in st.session_state:  # Check if 'loginToken' key exists
                 login_token = st.session_state.get('loginToken')
             else:
                 # Clear main section
                 main_section.empty()
                 show_auth_page()
+                st.stop()  # Stop execution to prevent rendering unnecessary elements
