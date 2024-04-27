@@ -38,12 +38,14 @@ if 'user' not in st.session_state:
 active_status = 0 #global variable to store the active status of the user 
 initial_login_email = ""
 def show_auth_page():
+    # Clear main section
+    main_section.empty()
     with auth_section:
         # Login/Registration Section
         if st.session_state.email is None:
             st.write(f"User session state value: {st.session_state['user']}")#for debugging
             st.write(f"Active Status value: {active_status}")#for debuggin
-            #see code at line 81 first
+            #see code at line 83 first
             #login functionality and logic
             def login_functionality(login_email,login_password):
                 if login_email and login_password:
@@ -123,6 +125,8 @@ def show_auth_page():
 
 
 def show_main_section():
+     # Clear authentication section
+     auth_section.empty()
      with main_section:
         if st.session_state.email:
             st.write(f"Active Status value: {active_status}")#for debuggin
@@ -130,28 +134,34 @@ def show_main_section():
             st.write(f"User session state value: {st.session_state['user']}")#for debugging
             st.write(f"Active Status value: {active_status}")#for debugging
             
-            hello_button = st.button('hello')
+           # hello_button = st.button('hello')
             
-            if hello_button:
+            if st.button('hello'):
                 st.write('okay')#not executing this line
                 #proceed to authentication page after clicking
 
 def showlogout_page():
-   # initial_login_email =  st.session_state['email']#use for logout
+    #initial_login_email =  st.session_state['email']#use for logout
     st.write(initial_login_email)
+    # Clear main section
+    main_section.empty()
     auth_section.empty()
     with logout_section:
-        st.button('Logout', key='logout', on_click=logout_clicked(initial_login_email))
+        if st.session_state.email and st.button('Logout', key='logout'):
+            logout_clicked()
+            #show_auth_page()
+            
 
-def logout_clicked(login_email_after_session):
-
+def logout_clicked():
+    # Clear main section
+    main_section.empty()
     #logout logic and functionality
     st.session_state.email = None     
     st.session_state.user = False
    # active_status = 0
    # db = get_db_connection()
     #cursor = db.cursor()
-   # show_auth_page()
+    #show_auth_page()
    # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status,login_email_after_session))
    # db.commit()
    # cursor.close()
@@ -160,10 +170,14 @@ def logout_clicked(login_email_after_session):
 #main control flow 
 with header_section:
     if 'email' not in st.session_state and 'user' not in st.session_state:
+        # Clear main section
+        main_section.empty()
         show_auth_page()
     else:
         if st.session_state.email and st.session_state.user:
             show_main_section()
             showlogout_page()
         else:
+             # Clear main section
+            main_section.empty()
             show_auth_page()
