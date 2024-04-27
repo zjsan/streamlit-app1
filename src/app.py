@@ -134,6 +134,7 @@ def show_main_section():
             
             if hello_button:
                 st.write('okay')#not executing this line
+                #proceed to authentication page after clicking
 
 def showlogout_page():
    # initial_login_email =  st.session_state['email']#use for logout
