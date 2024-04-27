@@ -1,6 +1,6 @@
 import streamlit as st
 import mysql.connector
-
+import random
 def get_db_connection():
   #connect to the database
   try:
@@ -36,7 +36,7 @@ if 'user' not in st.session_state:
 
 #global variables
 active_status = 0 #global variable to store the active status of the user 
-initial_login_email = ""
+login_token = None# Create a variable to store the login token (initially None)
 def show_auth_page():
     # Clear main section
     main_section.empty()
@@ -64,6 +64,10 @@ def show_auth_page():
                             if str(login_password) == str(password_db):
                                 st.session_state.email = login_email
                                 st.session_state.user = True
+                                login_token = str(random.randint(100000, 999999))
+                                 # Store the token in local storage
+                                js_code = f"""localStorage.setItem('loginToken', '{login_token}');"""
+                                st.write('<script>' + js_code + '</script>', unsafe_allow_html=True)
                                 #active_status = 1
                                # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
                                # db.commit()
@@ -142,7 +146,6 @@ def show_main_section():
 
 def showlogout_page():
     #initial_login_email =  st.session_state['email']#use for logout
-    st.write(initial_login_email)
     # Clear main section
     main_section.empty()
     auth_section.empty()
@@ -174,10 +177,13 @@ with header_section:
         main_section.empty()
         show_auth_page()
     else:
-        if st.session_state.email and st.session_state.user:
+        if st.session_state.email and st.session_state.user and login_token:
             show_main_section()
             showlogout_page()
         else:
-             # Clear main section
-            main_section.empty()
-            show_auth_page()
+            if 'loginToken' in st.session_state:  # Check if 'loginToken' key exists
+                login_token = st.session_state.get('loginToken')
+            else:
+                # Clear main section
+                main_section.empty()
+                show_auth_page()
