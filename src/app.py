@@ -7,10 +7,11 @@ from dotenv import dotenv_values
 
 st.set_page_config(page_title="Cognicraft")
 
-secrets = dotenv_values('hf.env')
+secrets = dotenv_values('hf.env')#remove once sytem login credentials is working
 
 #credentials for hugging face api - will move it in the login functionality
-hf_email = secrets['EMAIL']
+#need to replace with the actual login credentials - see line 95
+hf_email = secrets['EMAIL'] #set to empty string ex: hf_email = " "
 hf_pass = secrets['PASS']
 
 cookie_path_dir = "./cookies"
@@ -53,7 +54,11 @@ if 'user' not in st.session_state:
 if 'logged_in' not in st.query_params:
     st.query_params.logged_in = False
 
-
+#Session creation for the language model
+if 'generated' not in st.session_state:
+    st.session_state['generated'] = ["Here is the generated questions"]
+if 'past' not in st.session_state:
+    st.session_state['past'] = ['Hi!']
 
 #global variables
 active_status = 0 #global variable to store the active status of the user 
@@ -66,7 +71,7 @@ def show_auth_page():
         if st.session_state.email is None:
             st.write(f"User session state value: {st.session_state['user']}")#for debugging
             st.write(f"Active Status value: {active_status}")#for debuggin
-            #see code at line 105 first
+            #see code at line 114 first
             #login functionality and logic
             def login_functionality(login_email,login_password):
                 if login_email and login_password:
@@ -86,6 +91,10 @@ def show_auth_page():
                                 st.session_state.email = login_email
                                 st.session_state.user = True
                                 st.query_params.logged_in = True
+
+                                #------ hugging Face credentials ------ 
+                                #hf_email = login_email
+                                #hf_pass =  login_password
                                 #active_status = 1
                                # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
                                # db.commit()
@@ -150,17 +159,17 @@ def show_main_section():
     
      auth_section.empty() # Clear authentication section
      with main_section:
+        st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
+        st.write(f"Active Status value: {active_status}")#for debuggin
+        st.write(f"Welcome, {st.session_state['email']}!")
+        st.write(f"User session state value: {st.session_state['user']}")#for debugging
+        st.write(f"Active Status value: {active_status}")#for debugging
+
         if st.session_state.email and st.session_state.user and login_status:
 
             input_container = st.container()
             #colored_header(label='', description='', color_name='blue-30')
             response_container = st.container()
-
-            st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
-            st.write(f"Active Status value: {active_status}")#for debuggin
-            st.write(f"Welcome, {st.session_state['email']}!")
-            st.write(f"User session state value: {st.session_state['user']}")#for debugging
-            st.write(f"Active Status value: {active_status}")#for debugging
             
             #sidebar
             with st.sidebar:
@@ -690,11 +699,49 @@ def show_main_section():
                         st.write(full_prompt)  # Debugging
                         response = chatbot.chat(full_prompt)
 
-                        return response        
-            st.write(question_params())
-            if st.button('hello'):
-                st.write('okay')#not executing this line
-                #proceed to authentication page after clicking
+                        return response  
+
+                    else:
+                        #prompt template for Fill in the Blanks
+                        # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
+                        prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+                        st.write(prompt)  # Debugging
+                        response = chatbot.chat(prompt)
+                        return response
+
+            ## Conditional display of AI generated responses as a function of user provided prompts
+            #printings
+            def response_ai(user_message, additional_prompts):
+                with response_container:
+                    if user_message:
+                        response = generate_response(user_message,additional_prompts)
+                        st.session_state.past.append(user_message)
+                        st.session_state.generated.append(response)
+                        
+                    if st.session_state['generated']:
+                        for i in range(len(st.session_state['generated'])):
+                            st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
+                            st.write(st.session_state['generated'][i], key=str(i))
+            def main():
+                # Applying the user input box
+                with input_container:
+                    # User input
+                    additional_prompts = list(question_params())
+                    print(additional_prompts)   
+                    st.write(additional_prompts)#checking the index location of the additional prompts
+                    
+                    #if user enters needed parameters => enable text input for context
+                    if  additional_prompts:
+                        user_message = st.text_area("Enter text context:") # taking user provided prompt as input
+                        if st.button("Submit"):
+                            if user_message:
+                                with st.spinner('Wait for it...'):
+                                    response_ai(user_message, additional_prompts)
+                            else:
+                                st.warning("Missing input fields.") 
+
+            if __name__ == "__main__":
+                main()
 
 def showlogout_page():
     #initial_login_email =  st.session_state['email']#use for logout
@@ -702,7 +749,7 @@ def showlogout_page():
     main_section.empty()
     auth_section.empty()
     with logout_section:
-        if st.session_state.email and st.button('Logout', key='logout'):
+        if st.session_state.email and st.sidebar.button('Logout', key='logout'):
             logout_clicked()
             #show_auth_page()
             
