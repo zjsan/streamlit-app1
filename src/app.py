@@ -33,6 +33,9 @@ if 'email' not in st.session_state:
     st.session_state.email = None #initial value of the session since no login yet
 if 'user' not in st.session_state:
     st.session_state.user = False
+#query params
+if 'logged_in' not in st.query_params:
+    st.query_params.logged_in = False
 
 #global variables
 active_status = 0 #global variable to store the active status of the user 
@@ -64,10 +67,7 @@ def show_auth_page():
                             if str(login_password) == str(password_db):
                                 st.session_state.email = login_email
                                 st.session_state.user = True
-                                login_token = str(random.randint(100000, 999999))
-                                 # Store the token in local storage
-                                js_code = f"""localStorage.setItem('loginToken', '{login_token}');"""
-                                st.write('<script>' + js_code + '</script>', unsafe_allow_html=True)
+                                st.query_params.logged_in = True
                                 #active_status = 1
                                # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
                                # db.commit()
@@ -161,11 +161,7 @@ def logout_clicked():
     #logout logic and functionality
     st.session_state.email = None     
     st.session_state.user = False
-    login_token = None
-    # Clear login token from local storage
-    js_code = """localStorage.removeItem('loginToken');"""
-    st.write('<script>' + js_code + '</script>', unsafe_allow_html=True)
-    # Reset session state variables
+    st.query_params.clear()
    # active_status = 0
    # db = get_db_connection()
     #cursor = db.cursor()
@@ -177,21 +173,19 @@ def logout_clicked():
 
 #main control flow 
 with header_section:
-    if 'email' not in st.session_state and 'user' not in st.session_state and login_token == None:
-        # Clear main section
-        main_section.empty()
+    if 'email' not in st.session_state and 'user' not in st.session_state:
+        main_section.empty()# Clear main section
         show_auth_page()
         st.stop()
     else:
-        if st.session_state.email and st.session_state.user and login_token:
+        login_status = st.query_params.get("logged_in")
+        st.write(login_status)
+        if st.session_state.email and st.session_state.user and login_status:
             show_main_section()
             showlogout_page()
+            st.stop()
         else:
-            # Check for existing login token on every page load
-            if 'loginToken' in st.session_state:  # Check if 'loginToken' key exists
-                login_token = st.session_state.get('loginToken')
-            else:
-                # Clear main section
-                main_section.empty()
-                show_auth_page()
-                st.stop()  # Stop execution to prevent rendering unnecessary elements
+            main_section.empty()  # Clear main section
+            logout_clicked()
+            show_auth_page()
+            st.stop()
