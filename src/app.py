@@ -7,7 +7,7 @@ from dotenv import dotenv_values
 
 st.set_page_config(page_title="Cognicraft")
 
-secrets = dotenv_values('hf.env')#remove once sytem login credentials is working
+#secrets = dotenv_values('hf.env')#remove once sytem login credentials is working
 
 
 def get_db_connection():
@@ -45,11 +45,11 @@ if 'hf_email' not in st.session_state:
 if 'hf_pass' not in st.session_state:
     hf_pass = None
 
-if st.session_state.hf_email and st.session_state.hf_password:
-    cookie_path_dir = "./cookies"
-    sign = Login( st.session_state.hf_email, st.session_state.hf_pass)
-    cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
-    
+#if st.session_state.hf_email and st.session_state.hf_password:
+   # cookie_path_dir = "./cookies"
+   # sign = Login( st.session_state.hf_email, st.session_state.hf_pass)
+   # cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
+
 #creating user session states - user logged in 
 if 'email' not in st.session_state:
     st.session_state.email = None #initial value of the session since no login yet
@@ -159,8 +159,7 @@ def show_auth_page():
                             else:
                                 st.warning('Passwords does not matched')
                         else:
-                            st.error('Please Fill up the form')         
-
+                            st.error('Please Fill up the form')        
 
 def show_main_section():
     
@@ -168,7 +167,7 @@ def show_main_section():
      with main_section:
         st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
         st.write(f"Active Status value: {active_status}")#for debuggin
-        st.write(f"Welcome, {st.session_state['email']}!")
+        st.write(f"Welcome, {st.session_state['hf_email']}!")
         st.write(f"User session state value: {st.session_state['user']}")#for debugging
         st.write(f"Active Status value: {active_status}")#for debugging
 
@@ -267,8 +266,12 @@ def show_main_section():
 
             #generation of the response from the LLM
             def generate_response(prompt,question_parameters):
+                
+                #hugchat credentials will act as the api for the language model
+                cookie_path_dir = "./cookies"
+                sign = Login( st.session_state.hf_email, st.session_state.hf_pass)
+                cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
                 # Send prompt to chatbot and get response
-
                 chatbot = hugchat.ChatBot(cookies=cookies.get_dict()) 
 
                 st.write(question_parameters)
@@ -781,7 +784,8 @@ def logout_clicked():
 
 #main control flow 
 with header_section:
-    if 'email' not in st.session_state and 'user' not in st.session_state:
+    if 'hf_email' not in st.session_state and 'user' not in st.session_state:
+
         main_section.empty()# Clear main section
         show_auth_page()
         st.stop()
