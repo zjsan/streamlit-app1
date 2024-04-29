@@ -9,14 +9,6 @@ st.set_page_config(page_title="Cognicraft")
 
 secrets = dotenv_values('hf.env')#remove once sytem login credentials is working
 
-#credentials for hugging face api - will move it in the login functionality
-#need to replace with the actual login credentials - see line 95
-hf_email = secrets['EMAIL'] #set to empty string ex: hf_email = " "
-hf_pass = secrets['PASS']
-
-cookie_path_dir = "./cookies"
-sign = Login(hf_email, hf_pass)
-cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
 
 def get_db_connection():
   #connect to the database
@@ -45,6 +37,19 @@ main_section = st.container()
 auth_section = st.container()
 logout_section = st.container()
 
+
+#credentials for hugging face api - will move it in the login functionality
+#need to replace with the actual login credentials - see line 95
+if 'hf_email' not in st.session_state:
+    hf_email = None #set to empty string ex: hf_email = " "
+if 'hf_pass' not in st.session_state:
+    hf_pass = None
+
+if st.session_state.hf_email and st.session_state.hf_password:
+    cookie_path_dir = "./cookies"
+    sign = Login( st.session_state.hf_email, st.session_state.hf_pass)
+    cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
+    
 #creating user session states - user logged in 
 if 'email' not in st.session_state:
     st.session_state.email = None #initial value of the session since no login yet
@@ -59,6 +64,7 @@ if 'generated' not in st.session_state:
     st.session_state['generated'] = ["Here is the generated questions"]
 if 'past' not in st.session_state:
     st.session_state['past'] = ['Hi!']
+
 
 #global variables
 active_status = 0 #global variable to store the active status of the user 
@@ -93,8 +99,9 @@ def show_auth_page():
                                 st.query_params.logged_in = True
 
                                 #------ hugging Face credentials ------ 
-                                #hf_email = login_email
-                                #hf_pass =  login_password
+                                st.session_state.hf_email = login_email
+                                st.session_state.hf_pass =  login_password
+
                                 #active_status = 1
                                # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
                                # db.commit()
@@ -760,6 +767,8 @@ def logout_clicked():
     #logout logic and functionality
     st.session_state.email = None     
     st.session_state.user = False
+    st.session_state.hf_email = None
+    st.session_state.hf_pass = None
     st.query_params.clear()
    # active_status = 0
    # db = get_db_connection()
