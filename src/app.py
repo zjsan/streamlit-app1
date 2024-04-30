@@ -64,8 +64,8 @@ if 'generated' not in st.session_state:
     st.session_state['generated'] = ["Here is the generated questions"]
 if 'past' not in st.session_state:
     st.session_state['past'] = ['Hi!']
-if 'msg_context' not in st.sessions_state:
-    st.session_state.msg_context = ['']
+if 'msg_context' not in st.session_state:
+    st.session_state.msg_context = ''
 
 #global variables
 active_status = 0 #global variable to store the active status of the user 
