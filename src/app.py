@@ -146,6 +146,7 @@ def show_auth_page():
                                     existing_email = cursor.fetchone()
 
                                     if not existing_email:
+                                        st.write(new_password)#for debugging pero putangina
                                         # Insert new user into database
                                         cursor.execute("INSERT INTO user (user_email, user_password) VALUES (%s, %s)", (email, new_password))
                                         db.commit()
@@ -723,15 +724,69 @@ def show_main_section():
             #printings
             def response_ai(user_message, additional_prompts):
                 with response_container:
+
+                    #implement table joins to connect the three tables in the database
                     if user_message:
                         response = generate_response(user_message,additional_prompts)
                         st.session_state.past.append(user_message)
                         st.session_state.generated.append(response)
+
+                        #inserting record in the input_data table
+                        try:
+                            db = get_db_connection()
+                            cursor = db.cursor()
+                            # Check for email availability
+                            cursor.execute("SELECT * FROM user WHERE user_email = %s", (st.session_state.email,))
+                            user = cursor.fetchone()
+                            user_id = user[0]
+                           # user_email = user[1] 
+
+                            if user:
+                                st.write(st.session_state.past)#for debugging pero putangina
+                                # Insert new record into database
+                                cursor.execute("INSERT INTO input_data (questions_context) VALUES (%s) WHERE user_id = %s", (st.session_state.past, user_id))
+                                db.commit()
+                                st.success("Successfully stored in the database!")  
+                            else:
+                                st.error("SQL Error.")
+                            cursor.close()
+                            db.close()
+                        except Exception as e:
+                            st.error(f"Error connecting to database: {e}")
                         
                     if st.session_state['generated']:
+
+                        #printing in the web app 
                         for i in range(len(st.session_state['generated'])):
                             st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
                             st.write(st.session_state['generated'][i], key=str(i))
+                        
+                        #inserting record in the responses table
+                        try:
+                            db = get_db_connection()
+                            cursor = db.cursor()
+                            # Check for email availability
+                            cursor.execute("SELECT * FROM user WHERE user_email = %s", (st.session_state.email,))
+                            user = cursor.fetchone()
+                            user_id = user[0]
+                            cursor.execute("SELECT * FROM input_data WHERE user_id = %s", (user_id,))
+                            input_data = cursor.fetchone()
+                            input_id = input_data[0]
+                            #user_email = user[1] 
+
+                            if input_data:
+                                st.write(st.session_state.generated)#for debugging pero putangina
+                                # Insert new user into database
+                                cursor.execute("INSERT INTO responses (responses) VALUES (%s) WHERE data_id = %s", (st.session_state.generated, input_id))
+                                db.commit()
+                                st.success("Successfully stored in the database!")  
+                            else:
+                                st.error("SQL Error.")
+                            cursor.close()
+                            db.close()
+                        except Exception as e:
+                            st.error(f"Error connecting to database: {e}")
+                      
             def main():
                 # Applying the user input box
                 with input_container:
