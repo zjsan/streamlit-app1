@@ -64,7 +64,8 @@ if 'generated' not in st.session_state:
     st.session_state['generated'] = ["Here is the generated questions"]
 if 'past' not in st.session_state:
     st.session_state['past'] = ['Hi!']
-
+if 'msg_context' not in st.sessions_state:
+    st.session_state.msg_context = ['']
 
 #global variables
 active_status = 0 #global variable to store the active status of the user 
@@ -725,7 +726,7 @@ def show_main_section():
             def response_ai(user_message, additional_prompts):
                 with response_container:
 
-                    #implement table joins to connect the three tables in the database
+                    #need to implement table joins to connect the three tables in the database
                     if user_message:
                         response = generate_response(user_message,additional_prompts)
                         st.session_state.past.append(user_message)
@@ -741,10 +742,10 @@ def show_main_section():
                             user_id = user[0]
                            # user_email = user[1] 
 
-                            if user:
-                                st.write(st.session_state.past)#for debugging pero putangina
+                            if user_id:
+                                st.write(st.session_state.msg_context)#for debugging pero putangina
                                 # Insert new record into database
-                                cursor.execute("INSERT INTO input_data (questions_context) VALUES (%s) WHERE user_id = %s", (st.session_state.past, user_id))
+                                cursor.execute("INSERT INTO input_data (questions_context) VALUES (%s) WHERE user_id = %s", (st.session_state.msg_context, user_id))
                                 db.commit()
                                 st.success("Successfully stored in the database!")  
                             else:
@@ -800,6 +801,7 @@ def show_main_section():
                         user_message = st.text_area("Enter text context:") # taking user provided prompt as input
                         if st.button("Submit"):
                             if user_message:
+                                st.session_state.msg_context.append(user_message) 
                                 with st.spinner('Wait for it...'):
                                     response_ai(user_message, additional_prompts)
                             else:
