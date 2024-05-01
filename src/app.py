@@ -61,7 +61,7 @@ if 'logged_in' not in st.query_params:
 
 #Session creation for the language model
 if 'generated' not in st.session_state:
-    st.session_state['generated'] = ["Here is the generated questions"]
+    st.session_state['generated'] = [""]
 if 'past' not in st.session_state:
     st.session_state['past'] = ['Hi!']
 if 'msg_context' not in st.session_state:
@@ -739,55 +739,40 @@ def show_main_section():
                             # Check for email availability
                             cursor.execute("SELECT * FROM user WHERE user_email = %s", (st.session_state.email,))
                             user = cursor.fetchone()
-                            user_id = user[0]
+                           
                            # user_email = user[1] 
+                            if user:
+                                user_id = user[0]
+                                st.write(user_id)
+                                st.write(st.session_state.msg_context)#for debugging
+                                cursor.execute("INSERT INTO input_data (questions_context, user_id) VALUES (%s, %s)", (st.session_state.msg_context, user_id))
+                                # Get the data_id of the newly inserted record
+                                cursor.execute("SELECT LAST_INSERT_ID()")
+                                data_id = cursor.fetchone()[0]
 
-                            if user_id:
-                                st.write(st.session_state.msg_context)#for debugging pero putangina
-                                # Insert new record into database
-                                cursor.execute("INSERT INTO input_data (questions_context) VALUES (%s) WHERE user_id = %s", (st.session_state.msg_context, user_id))
+                                # Insert AI-generated response into responses table
+                                #printing in the web app 
+                            for i in range(len(st.session_state['generated'])):
+                                #st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
+                                #st.write(st.session_state['generated'][i], key=str(i))
+                                #generated_text = str(st.session_state.generated)
+                                cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)", (str(st.session_state['generated'][i]), data_id))
                                 db.commit()
-                                st.success("Successfully stored in the database!")  
+                                st.success("Successfully stored in the database!")
                             else:
-                                st.error("SQL Error.")
-                            cursor.close()
-                            db.close()
+                                st.error("User not found.")  
                         except Exception as e:
                             st.error(f"Error connecting to database: {e}")
-                        
+                        finally:
+                             cursor.close()  # Ensure cursor is closed even in case of exceptions
+                             db.close()  # Ensure database connection is closed
+
                     if st.session_state['generated']:
 
                         #printing in the web app 
                         for i in range(len(st.session_state['generated'])):
                             st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
                             st.write(st.session_state['generated'][i], key=str(i))
-                        
-                        #inserting record in the responses table
-                        try:
-                            db = get_db_connection()
-                            cursor = db.cursor()
-                            # Check for email availability
-                            cursor.execute("SELECT * FROM user WHERE user_email = %s", (st.session_state.email,))
-                            user = cursor.fetchone()
-                            user_id = user[0]
-                            cursor.execute("SELECT * FROM input_data WHERE user_id = %s", (user_id,))
-                            input_data = cursor.fetchone()
-                            input_id = input_data[0]
-                            #user_email = user[1] 
-
-                            if input_data:
-                                st.write(st.session_state.generated)#for debugging pero putangina
-                                # Insert new user into database
-                                cursor.execute("INSERT INTO responses (responses) VALUES (%s) WHERE data_id = %s", (st.session_state.generated, input_id))
-                                db.commit()
-                                st.success("Successfully stored in the database!")  
-                            else:
-                                st.error("SQL Error.")
-                            cursor.close()
-                            db.close()
-                        except Exception as e:
-                            st.error(f"Error connecting to database: {e}")
-                      
             def main():
                 # Applying the user input box
                 with input_container:
@@ -801,7 +786,7 @@ def show_main_section():
                         user_message = st.text_area("Enter text context:") # taking user provided prompt as input
                         if st.button("Submit"):
                             if user_message:
-                                st.session_state.msg_context.append(user_message) 
+                                st.session_state.msg_context = user_message
                                 with st.spinner('Wait for it...'):
                                     response_ai(user_message, additional_prompts)
                             else:
