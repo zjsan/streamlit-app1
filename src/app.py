@@ -790,10 +790,10 @@ def show_main_section():
                         user_id = user_id_result[0]  # Extract user_id from the result
                         
                         # Fetch conversation history for the logged-in user from the database using user_id
-                        cursor.execute("SELECT DATE_FORMAT(STR_TO_DATE(responses.timestamp_column, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %h:%i %p') AS formatted_datetime, responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id WHERE input_data.user_id = %s ORDER BY formatted_datetime ASC;", (user_id,))
+                        cursor.execute("SELECT DATE_FORMAT(responses.date_created, '%Y-%m-%d %h:%i %p') AS formatted_datetime, responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id WHERE input_data.user_id = %s ORDER BY responses.date_created DESC;",(user_id,))
                         response_history = cursor.fetchall()
                         
-                        return [response[0] for response in response_history]  # Extract response text from fetched rows
+                        return [response[1] for response in response_history]  # Extract response text from fetched rows
                     else:
                         st.error("User not found.")
                         return []
@@ -821,6 +821,7 @@ def show_main_section():
 
             # Function to clear the current chat view
             def clear_chat_view():
+                st.empty()
                 # Implement logic to clear chat view here
                 pass
 
