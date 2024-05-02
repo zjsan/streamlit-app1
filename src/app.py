@@ -783,9 +783,8 @@ def show_main_section():
                         db = get_db_connection()
                         cursor = db.cursor()
                         # Fetch conversation history from database
-                        cursor.execute("SELECT responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id ORDER BY responses.data_id ASC")
+                        cursor.execute("SELECT DATE_FORMAT(STR_TO_DATE(responses.timestamp_column, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %h:%i %p') AS formatted_datetime, responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id ORDER BY formatted_datetime ASC;")
                         response_history = cursor.fetchall()
-
                         return [response[0] for response in response_history]  # Extract response text from fetched rows
                     except Exception as e:
                         st.error(f"Error connecting to database: {e}")
