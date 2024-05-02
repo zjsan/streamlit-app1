@@ -76,8 +76,8 @@ def show_auth_page():
     with auth_section:
         # Login/Registration Section
         if st.session_state.email is None:
-            st.write(f"User session state value: {st.session_state['user']}")#for debugging
-            st.write(f"Active Status value: {active_status}")#for debuggin
+            #st.write(f"User session state value: {st.session_state['user']}")#for debugging
+            #st.write(f"Active Status value: {active_status}")#for debuggin
             #see code at line 114 first
             #login functionality and logic
             def login_functionality(login_email,login_password):
@@ -774,33 +774,53 @@ def show_main_section():
                         for i in range(len(st.session_state['generated'])):
                             st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
                             st.write(st.session_state['generated'][i], key=str(i))
-                    
-            
-            def message_loader(message_index):
-             
-                st.empty()  # Clear current chat view
 
-                try:
-                    db = get_db_connection()
-                    cursor = db.cursor()
 
-                    # Fetch specific message from database based on index (assuming data_id order)
-                    cursor.execute("SELECT responses.responses, input_data.questions_context FROM responses JOIN input_data ON responses.data_id = input_data.id WHERE responses.data_id = %s", (message_index + 1,))  # Adjust index for data_id offset
-                    message = cursor.fetchone()
+            #--------Implementing the Response History Feature-----------
+                def get_response_history_from_db():
 
-                    if message:
-                        user_message, ai_response = message
-                        st.write(user_message, is_user=True)
-                        st.write(ai_response)
+                    try:
+                        db = get_db_connection()
+                        cursor = db.cursor()
+                        # Fetch conversation history from database
+                        cursor.execute("SELECT responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id ORDER BY responses.data_id ASC")
+                        response_history = cursor.fetchall()
+
+                        return [response[0] for response in response_history]  # Extract response text from fetched rows
+                    except Exception as e:
+                        st.error(f"Error connecting to database: {e}")
+                        return []
+                    finally:
+                        cursor.close()
+                        db.close()
+
+
+                def display_response_history():
+                    st.sidebar.title("Response History")
+                    response_history = get_response_history_from_db()
+
+                    if response_history:
+                        for i, response in enumerate(response_history):
+                            # Show a snippet of each response in the sidebar
+                            truncated_response = response[:50] + "..." if len(response) > 50 else response
+                            if st.sidebar.button(f"Response {i+1}: {truncated_response}"):
+                                # If a response is clicked, clear current chat view and load historical message in main view
+                                clear_chat_view()  # Assuming you have a function to clear the chat view
+                                load_historical_message(response)  # Function to load historical message in main view
                     else:
-                        st.error("Message not found!")
+                        st.sidebar.write("No response history available.")
 
-                except Exception as e:
-                    st.error(f"Error connecting to database: {e}")  # Assuming handle_db_error function for error handling
-                finally:
-                    cursor.close()
-                    db.close()
-       
+                # Function to clear the current chat view
+                def clear_chat_view():
+                    # Implement logic to clear chat view here
+                    pass
+
+                # Function to load historical message in main view
+                def load_historical_message(response):
+                    st.empty()
+                    # Implement logic to load historical message in main view here
+                    st.write(response)
+
             def main():
                 # Applying the user input box
                 with input_container:
@@ -817,27 +837,6 @@ def show_main_section():
                                 st.session_state.msg_context = user_message
                                 with st.spinner('Wait for it...'):
                                     response_ai(user_message, additional_prompts)
-                                    # Chat history sidebar
-                                    with st.sidebar:
-                                        st.header("Conversation History")
-                                        try:
-                                            db = get_db_connection()
-                                            cursor = db.cursor()
-
-                                            # Fetch conversation history from database (assuming order by data_id)
-                                            cursor.execute("SELECT responses.responses, input_data.questions_context FROM responses JOIN input_data ON responses.data_id = input_data.id ORDER BY responses.data_id ASC")
-                                            conversation_history = cursor.fetchall()
-
-                                            for message in conversation_history:
-                                                user_message, ai_response = message  # Assuming message is a tuple
-                                                # Replace with a clickable element like st.button or custom component
-                                                if st.button(f"Conversation {message[0]}"):  # Using message[0] for data display (replace with index if needed)
-                                                    message_loader(message[0])  # Assuming message[0] is the index
-
-                                        except Exception as e:
-                                             st.error(f"Error connecting to database: {e}")   # Assuming handle_db_error function for error handling
-                                        finally:
-                                            cursor.close()
                             else:
                                 st.warning("Missing input fields.") 
 
@@ -882,7 +881,7 @@ with header_section:
         st.stop()
     else:
         login_status = st.query_params.get("logged_in")
-        st.write(login_status)
+       # st.write(login_status)
         if st.session_state.email and st.session_state.user and login_status:
             show_main_section()
             showlogout_page()
