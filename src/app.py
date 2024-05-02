@@ -776,7 +776,7 @@ def show_main_section():
                             st.write(st.session_state['generated'][i], key=str(i))
 
 
-            #--------Implementing the Response History Feature-----------
+            #--------Implementing the Response History Feature--------#--------Implementing the Response History Feature-----------
             def get_response_history_from_db():
                 try:
                     db = get_db_connection()
@@ -790,10 +790,10 @@ def show_main_section():
                         user_id = user_id_result[0]  # Extract user_id from the result
                         
                         # Fetch conversation history for the logged-in user from the database using user_id
-                        cursor.execute("SELECT DATE_FORMAT(responses.date_created, '%Y-%m-%d %h:%i %p') AS formatted_datetime, responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id WHERE input_data.user_id = %s ORDER BY responses.date_created DESC;",(user_id,))
+                        cursor.execute("SELECT DATE_FORMAT(responses.date_created, '%Y-%m-%d %h:%i %p') AS formatted_datetime, responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id WHERE input_data.user_id = %s ORDER BY responses.date_created DESC;", (user_id,))
                         response_history = cursor.fetchall()
                         
-                        return [response[1] for response in response_history]  # Extract response text from fetched rows
+                        return response_history  # Return entire fetched rows with formatted datetime and responses
                     else:
                         st.error("User not found.")
                         return []
@@ -804,20 +804,22 @@ def show_main_section():
                     cursor.close()
                     db.close()
 
+            # Function to display response history in sidebar and handle interaction
             def display_response_history():
                 st.sidebar.title("Response History")
                 response_history = get_response_history_from_db()
 
                 if response_history:
-                    for i, response in enumerate(response_history):
+                    for i, (formatted_datetime, response) in enumerate(response_history):
                         # Show a snippet of each response in the sidebar
                         truncated_response = response[:50] + "..." if len(response) > 50 else response
-                        if st.sidebar.button(f"Response {i+1}: {truncated_response}"):
+                        if st.sidebar.button(f"{formatted_datetime}: {truncated_response}"):
                             # If a response is clicked, clear current chat view and load historical message in main view
                             clear_chat_view()  # Assuming you have a function to clear the chat view
                             load_historical_message(response)  # Function to load historical message in main view
                 else:
                     st.sidebar.write("No response history available.")
+
 
             # Function to clear the current chat view
             def clear_chat_view():
