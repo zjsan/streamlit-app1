@@ -774,7 +774,8 @@ def show_main_section():
                         for i in range(len(st.session_state['generated'])):
                             st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
                             st.write(st.session_state['generated'][i], key=str(i))
-
+ 
+                    st.experimental_rerun() # After the insertion, trigger a rerun of the Streamlit app
 
             #--------Implementing the Response History Feature--------#--------Implementing the Response History Feature-----------
             def get_response_history_from_db():
