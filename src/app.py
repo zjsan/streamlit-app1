@@ -1,15 +1,14 @@
 import streamlit as st
 import mysql.connector
+import requests
 from hugchat import hugchat
 from hugchat.login import Login
-from dotenv import dotenv_values
-
 
 st.set_page_config(page_title="Cognicraft")
 
 #secrets = dotenv_values('hf.env')#remove once sytem login credentials is working
 
-
+#---------Data Base Connection ------------
 def get_db_connection():
   #connect to the database
   try:
@@ -32,11 +31,21 @@ def get_db_connection():
 
 #cookie_manager = get_manager()
 
+#-----Page Containers----------------
 header_section = st.container()
 main_section = st.container()
 auth_section = st.container()
 logout_section = st.container()
 
+#------------Session States-----------------------------
+
+session = requests.Session()
+session.timeout = 10
+
+# Use the session to make your API call
+response = session.get("https://huggingface.co/chat/")
+# Make the API call with a timeout of 15 seconds
+response = requests.get("https://huggingface.co/your/api/endpoint", timeout=15)
 
 #credentials for hugging face api - will move it in the login functionality
 #need to replace with the actual login credentials - see line 95
@@ -70,6 +79,8 @@ if 'msg_context' not in st.session_state:
 #global variables
 active_status = 0 #global variable to store the active status of the user 
 login_token = None# Create a variable to store the login token (initially None)
+
+#--------- Authentication Page-----------
 def show_auth_page():
     # Clear main section
     main_section.empty()
@@ -78,7 +89,7 @@ def show_auth_page():
         if st.session_state.email is None:
             #st.write(f"User session state value: {st.session_state['user']}")#for debugging
             #st.write(f"Active Status value: {active_status}")#for debuggin
-            #see code at line 114 first
+            #see code at line 132 first for the login fields
             #login functionality and logic
             def login_functionality(login_email,login_password):
                 if login_email and login_password:
@@ -91,9 +102,9 @@ def show_auth_page():
                         
                         #accessing user password
                         if user:
-                            password_db = user[2]  # Retrieve password hash from database
-                            st.write(password_db)# for debugging
-                            st.write(login_password)#for debugging 
+                            password_db = user[2]  # Retrieve password from database
+                            #st.write(password_db)# for debugging
+                            #st.write(login_password)#for debugging 
                             if str(login_password) == str(password_db):
                                 st.session_state.email = login_email
                                 st.session_state.user = True
@@ -107,7 +118,6 @@ def show_auth_page():
                                # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
                                # db.commit()
                                 st.success("Login successful!")
-
                             else:
                                 st.error("Incorrect password.")
                         else:
@@ -123,8 +133,7 @@ def show_auth_page():
             login_email = st.text_input("Email")
             login_password = st.text_input("Password", type="password")
             st.button("Login", key='login',on_click=login_functionality, args=(login_email,login_password))
-
-           
+   
             #--------registration part------
             if st.checkbox("Register here"):
                 st.write('Please Register using  your Hugging Face Credentials')
@@ -138,7 +147,7 @@ def show_auth_page():
                     if submit_button:
                         if email and new_password and password_confirmation:
                             if new_password == password_confirmation:
-                                st.write(email,new_password,password_confirmation)
+                                #st.write(email,new_password,password_confirmation) - for debugging
                                 try:
                                     db = get_db_connection()
                                     cursor = db.cursor()
@@ -146,30 +155,31 @@ def show_auth_page():
                                     cursor.execute("SELECT * FROM user WHERE user_email = %s", (email,))
                                     existing_email = cursor.fetchone()
 
-                                    if not existing_email:
-                                        st.write(new_password)#for debugging pero putangina
+                                    if not existing_email:#if the email is not yet in the database then proceed to the registration logic 
+                                        #st.write(new_password)#for debugging 
                                         # Insert new user into database
                                         cursor.execute("INSERT INTO user (user_email, user_password) VALUES (%s, %s)", (email, new_password))
                                         db.commit()
                                         st.success("Successfully stored in the database!")  
                                     else:
                                         st.error("Email already exists. Please choose another.")
-                                    cursor.close()
-                                    db.close()
                                 except Exception as e:
                                     st.error(f"Error connecting to database: {e}")
+                                finally:
+                                    cursor.close()
+                                    db.close()
                             else:
                                 st.warning('Passwords does not matched')
                         else:
                             st.error('Please Fill up the form')        
-
+#---------Main Page-------------
 def show_main_section():
     
      auth_section.empty() # Clear authentication section
      with main_section:
         st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
         st.write(f"Active Status value: {active_status}")#for debuggin
-        st.write(f"Welcome, {st.session_state['hf_email']}!")
+        st.sidebar.write(f"Welcome, {st.session_state['hf_email']}!")
         st.write(f"User session state value: {st.session_state['user']}")#for debugging
         st.write(f"Active Status value: {active_status}")#for debugging
 
@@ -179,7 +189,7 @@ def show_main_section():
             #colored_header(label='', description='', color_name='blue-30')
             response_container = st.container()
             
-            #sidebar
+            #Main Page Sidebar
             with st.sidebar:
                 st.markdown('''
                 ## About
@@ -188,7 +198,7 @@ def show_main_section():
                 - [HugChat](<https://github.com/Soulter/hugging-chat-api>)
                 - [OpenAssistant/oasst-sft-6-llama-30b-xor](<https://huggingface.co/OpenAssistant/oasst-sft-6-llama-30b-xor>) LLM model
                 ''') 
-            #question inputs
+            #----------Question Inputs Section----------------
             def question_params():
                 question_params = []
                 #question_params_length = len(question_params)
@@ -266,7 +276,7 @@ def show_main_section():
                 
                 return question_params
 
-            #generation of the response from the LLM
+            #----------Generation of the response from the LLM----------------
             def generate_response(prompt,question_parameters):
                 
                 #hugchat credentials will act as the api for the language model
