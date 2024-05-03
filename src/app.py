@@ -776,7 +776,7 @@ def show_main_section():
                         finally:
                              cursor.close()  # Ensure cursor is closed even in case of exceptions
                              db.close()  # Ensure database connection is closed
-
+                             st.rerun() # After the insertion, trigger a rerun of the Streamlit app-use to refresh chat history, renders latest response
                     
                     if st.session_state['generated']:
 
@@ -841,7 +841,7 @@ def show_main_section():
                 st.empty()
                 # Implement logic to load historical message in main view here
                 st.write(response)
-                st.experimental_rerun() # After the insertion, trigger a rerun of the Streamlit app
+                
                 
 
             def main():
