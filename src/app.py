@@ -39,13 +39,13 @@ logout_section = st.container()
 
 #------------Session States-----------------------------
 
-session = requests.Session()
-session.timeout = 10
+#session = requests.Session()
+#session.timeout = 10
 
 # Use the session to make your API call
-response = session.get("https://huggingface.co/chat/")
+#response = session.get("https://huggingface.co/chat/")
 # Make the API call with a timeout of 15 seconds
-response = requests.get("https://huggingface.co/your/api/endpoint", timeout=15)
+#response = requests.get("https://huggingface.co/your/api/endpoint", timeout=15)
 
 #credentials for hugging face api - will move it in the login functionality
 #need to replace with the actual login credentials - see line 95
@@ -838,11 +838,12 @@ def show_main_section():
                     for i, (formatted_datetime, response) in enumerate(response_history):
                         # Show a snippet of each response in the sidebar
                         truncated_response = response[:50] + "..." if len(response) > 50 else response
+                        
                         delete_button = st.sidebar.button("🗑️", key=f"delete_{i}")  # Delete button/emoji
                         if delete_button:
                             delete_response_from_db(response)  # If delete button/emoji is clicked, delete the response
                         if st.sidebar.button(f"{formatted_datetime}: {truncated_response}"):
-                            # If a response is clicked, clear current chat view and load historical message in main view
+                            # If a response is clicked, clear current   view and load historical message in main view
                             clear_chat_view()  # Assuming you have a function to clear the chat view
                             load_historical_message(response)  # Function to load historical message in main view
                 else:
