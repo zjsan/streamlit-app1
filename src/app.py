@@ -40,12 +40,12 @@ logout_section = st.container()
 #------------Session States-----------------------------
 
 session = requests.Session()
-session.timeout = 10
+session.timeout = 15
 
 # Use the session to make your API call
 response = session.get("https://huggingface.co/chat/")
 # Make the API call with a timeout of 15 seconds
-response = requests.get("https://huggingface.co/your/api/endpoint", timeout=15)
+response = requests.get("https://huggingface.co/your/api/endpoint", timeout=30)
 
 #credentials for hugging face api - will move it in the login functionality
 #need to replace with the actual login credentials - see line 95
