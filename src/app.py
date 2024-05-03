@@ -813,6 +813,22 @@ def show_main_section():
                     cursor.close()
                     db.close()
 
+            # Function to delete a response from the database
+            def delete_response_from_db(response):
+                try:
+                    db = get_db_connection()
+                    cursor = db.cursor()
+                    # Your code to delete the response from the database goes here
+                    cursor.execute("DELETE FROM responses WHERE response = %s", (response,))
+                    db.commit()
+                    # After the deletion, trigger a rerun of the Streamlit app
+                    st.experimental_rerun()
+                except Exception as e:
+                    st.error(f"Error connecting to database: {e}")
+                finally:
+                    cursor.close()
+                    db.close()
+
             # Function to display response history in sidebar and handle interaction
             def display_response_history():
                 st.sidebar.title("Response History")
@@ -822,6 +838,9 @@ def show_main_section():
                     for i, (formatted_datetime, response) in enumerate(response_history):
                         # Show a snippet of each response in the sidebar
                         truncated_response = response[:50] + "..." if len(response) > 50 else response
+                        delete_button = st.sidebar.button("🗑️", key=f"delete_{i}")  # Delete button/emoji
+                        if delete_button:
+                            delete_response_from_db(response)  # If delete button/emoji is clicked, delete the response
                         if st.sidebar.button(f"{formatted_datetime}: {truncated_response}"):
                             # If a response is clicked, clear current chat view and load historical message in main view
                             clear_chat_view()  # Assuming you have a function to clear the chat view
@@ -841,8 +860,6 @@ def show_main_section():
                 st.empty()
                 # Implement logic to load historical message in main view here
                 st.write(response)
-                
-                
 
             def main():
                 # Applying the user input box
