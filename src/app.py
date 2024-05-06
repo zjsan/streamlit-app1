@@ -822,7 +822,7 @@ def show_main_section():
                     db = get_db_connection()
                     cursor = db.cursor()
                     # Your code to delete the response from the database goes here
-                    cursor.execute("DELETE FROM responses WHERE response = %s", (response,))
+                    cursor.execute("DELETE FROM responses WHERE responses = %s", (response,))
                     db.commit()
                     # After the deletion, trigger a rerun of the Streamlit app
                     st.experimental_rerun()
@@ -837,33 +837,33 @@ def show_main_section():
                 st.sidebar.title("Response History")
                 response_history = get_response_history_from_db()
 
-                #st.write(response_history)
                 if response_history:
                     for i, (formatted_datetime, response) in enumerate(response_history):
                         # Show a snippet of each response in the sidebar
                         truncated_response = response[:50] + "..." if len(response) > 50 else response
-                     
-                        # Combine formatted datetime and truncated response into a single string
-                        #combined_text = f"{formatted_datetime}: {truncated_response}"
+                    
                         # Create columns to place response and delete button side by side
                         col1, col2 = st.sidebar.columns([4,1])
                         chats_button = col1.button(f"{formatted_datetime}: {truncated_response}")
                         delete_button = col2.button("🗑️", key=f"delete_{i}")  # Delete button/emoji
-                        st.write(response)
-                        if delete_button:#not functioning
-                            st.write(response)
+                        
+                        # Function to handle delete button click event
+                        if delete_button:
                             delete_response_from_db(response)  # If delete button/emoji is clicked, delete the response
-                            st.rerun()
-                        # If a response is clicked, clear current   view and load historical message in main view
+                            st.rerun()  # Rerun the Streamlit app after deletion
+
+                        # If a response is clicked, clear current view and load historical message in main view
                         if chats_button:
                             clear_chat_view()  # Assuming you have a function to clear the chat view
                             load_historical_message(response)  # Function to load historical message in main view
+                        
                         # Add a spacer between rows for better visual separation
                         st.sidebar.write("---")
                 else:
                     st.sidebar.write("No response history available.")
+                #st.rerun()  # Rerun the Streamlit app after deletion
 
-
+                
             # Function to clear the current chat view
             def clear_chat_view():
                 st.empty()
