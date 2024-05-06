@@ -767,7 +767,8 @@ def show_main_section():
                                 #st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
                                 #st.write(st.session_state['generated'][i], key=str(i))
                                 #generated_text = str(st.session_state.generated)
-                                if st.session_state.generated:
+
+                                if st.session_state.generated:#trying to fix the empty response content in the db
                                     cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)", (str(st.session_state['generated'][i]), data_id))
                                     db.commit()
                                     st.success("Successfully stored in the database!")
@@ -848,9 +849,11 @@ def show_main_section():
                         col1, col2 = st.sidebar.columns([4,1])
                         chats_button = col1.button(f"{formatted_datetime}: {truncated_response}")
                         delete_button = col2.button("🗑️", key=f"delete_{i}")  # Delete button/emoji
-                        
-                        if delete_button:
+                        st.write(response)
+                        if delete_button:#not functioning
+                            st.write(response)
                             delete_response_from_db(response)  # If delete button/emoji is clicked, delete the response
+                            st.rerun()
                         # If a response is clicked, clear current   view and load historical message in main view
                         if chats_button:
                             clear_chat_view()  # Assuming you have a function to clear the chat view
