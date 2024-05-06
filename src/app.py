@@ -180,6 +180,7 @@ def show_main_section():
         st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
         st.write(f"Active Status value: {active_status}")#for debuggin
         st.sidebar.write(f"Welcome, {st.session_state['hf_email']}!")
+        showlogout_page()
         st.write(f"User session state value: {st.session_state['user']}")#for debugging
         st.write(f"Active Status value: {active_status}")#for debugging
 
@@ -925,7 +926,6 @@ with header_section:
        # st.write(login_status)
         if st.session_state.email and st.session_state.user and login_status:
             show_main_section()
-            showlogout_page()
             st.stop()
         else:
             main_section.empty()  # Clear main section
