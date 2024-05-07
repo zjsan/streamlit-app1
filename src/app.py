@@ -85,11 +85,12 @@ def show_auth_page():
     # Clear main section
     main_section.empty()
     with auth_section:
+        st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
         # Login/Registration Section
         if st.session_state.email is None:
             #st.write(f"User session state value: {st.session_state['user']}")#for debugging
             #st.write(f"Active Status value: {active_status}")#for debuggin
-            #see code at line 132 first for the login fields
+            #see code at line 133 first for the login fields
             #login functionality and logic
             def login_functionality(login_email,login_password):
                 if login_email and login_password:
@@ -802,7 +803,7 @@ def show_main_section():
                         user_id = user_id_result[0]  # Extract user_id from the result
                         
                         # Fetch conversation history for the logged-in user from the database using user_id
-                        cursor.execute("SELECT DATE_FORMAT(responses.date_created, '%Y-%m-%d %h:%i %p') AS formatted_datetime, responses.responses FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id WHERE input_data.user_id = %s ORDER BY responses.date_created DESC;", (user_id,))
+                        cursor.execute("SELECT DATE_FORMAT(responses.date_created, '%Y-%m-%d %h:%i %p') AS formatted_datetime, responses.responses, input_data.questions_context FROM responses INNER JOIN input_data ON responses.data_id = input_data.data_id WHERE input_data.user_id = %s ORDER BY responses.date_created DESC;", (user_id,))
                         response_history = cursor.fetchall()
                         
                         return response_history  # Return entire fetched rows with formatted datetime and responses
@@ -838,7 +839,8 @@ def show_main_section():
                 response_history = get_response_history_from_db()
 
                 if response_history:
-                    for i, (formatted_datetime, response) in enumerate(response_history):
+                    
+                    for i, (formatted_datetime, response, question_context) in enumerate(response_history):#unpacking the different retrieved data in the db
                         # Show a snippet of each response in the sidebar
                         truncated_response = response[:50] + "..." if len(response) > 50 else response
                     
@@ -855,7 +857,7 @@ def show_main_section():
                         # If a response is clicked, clear current view and load historical message in main view
                         if chats_button:
                             clear_chat_view()  # Assuming you have a function to clear the chat view
-                            load_historical_message(response)  # Function to load historical message in main view
+                            load_historical_message(response,question_context)  # Function to load historical message in main view
                         
                         # Add a spacer between rows for better visual separation
                         st.sidebar.write("---")
@@ -871,9 +873,10 @@ def show_main_section():
                 pass
 
             # Function to load historical message in main view
-            def load_historical_message(response):
+            def load_historical_message(response,question_context):
                 st.empty()
                 # Implement logic to load historical message in main view here
+                st.write(question_context)
                 st.write(response)
 
             def main():
