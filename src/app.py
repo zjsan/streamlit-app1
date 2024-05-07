@@ -879,12 +879,51 @@ def show_main_section():
                 st.write(question_context)
                 st.write(response)
 
+            #3 maximum number of retry attempts for connection
+            # Function to make an HTTPS request with retry logic
+            def make_https_request_with_retry(url, max_retry_attempts=3):
+                # Loop for the maximum number of retry attempts
+                for attempt in range(max_retry_attempts):
+                    try:
+                        # Attempt to make the HTTPS request
+                        response = requests.get(url)
+                        # Check if the request was successful (status code 200)
+                        if response.status_code == 200:
+                            return response  # Return the response if successful
+                        # Raise an exception if the status code is unexpected
+                        else:
+                            raise requests.exceptions.RequestException(f"Unexpected status code: {response.status_code}")
+                    # Handle timeout errors
+                    except requests.exceptions.Timeout:
+                        if attempt < max_retry_attempts - 1:
+                            print(f"Connection attempt {attempt+1} timed out. Retrying...")
+                        else:
+                            print("Connection timed out after multiple attempts.")
+                    # Handle other request exceptions
+                    except requests.exceptions.RequestException as e:
+                        if attempt < max_retry_attempts - 1:
+                            print("An error occurred:", e, "Retrying...")
+                        else:
+                            print("Maximum retry attempts reached.")
+                
+                return None  # Return None if all attempts fail
+            
             def main():
+
+                #Checking connectivity with the api
+                url = "https://huggingface.co"
+                response = make_https_request_with_retry(url)
+                if response:
+                    # Process the response here
+                    print("Response:", response.text)
+                else:
+                    print("Failed to make the HTTPS request.")
+
                 # Applying the user input box
                 with input_container:
                     # User input
                     additional_prompts = list(question_params())
-                    print(additional_prompts)   
+                    print(additional_prompts)
                     st.write(additional_prompts)#checking the index location of the additional prompts
                     display_response_history()
                     #if user enters needed parameters => enable text input for context
