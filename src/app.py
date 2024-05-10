@@ -839,25 +839,30 @@ def show_main_section():
                 response_history = get_response_history_from_db()
 
                 if response_history:
-                    
-                    for i, (formatted_datetime, response, question_context) in enumerate(response_history):#unpacking the different retrieved data in the db
+                    for i, (formatted_datetime, response, question_context) in enumerate(response_history):
                         # Show a snippet of each response in the sidebar
                         truncated_response = response[:50] + "..." if len(response) > 50 else response
-                    
+                        
+                        # Create unique keys for buttons using the index i
+                        chats_button_key = f"chats_button_{i}"
+                        delete_button_key = f"delete_button_{i}"
+                        
                         # Create columns to place response and delete button side by side
                         col1, col2 = st.sidebar.columns([4,1])
-                        chats_button = col1.button(f"{formatted_datetime}: {truncated_response}")
-                        delete_button = col2.button("🗑️", key=f"delete_{i}")  # Delete button/emoji
+                        
+                        # Create buttons with unique keys
+                        chats_button = col1.button(f"{formatted_datetime}: {truncated_response}", key=chats_button_key)
+                        delete_button = col2.button("🗑️", key=delete_button_key)
                         
                         # Function to handle delete button click event
                         if delete_button:
-                            delete_response_from_db(response)  # If delete button/emoji is clicked, delete the response
-                            st.rerun()  # Rerun the Streamlit app after deletion
+                            delete_response_from_db(response)
+                            st.experimental_rerun()  # Rerun the Streamlit app after deletion
 
                         # If a response is clicked, clear current view and load historical message in main view
                         if chats_button:
-                            clear_chat_view()  # Assuming you have a function to clear the chat view
-                            load_historical_message(response,question_context)  # Function to load historical message in main view
+                            clear_chat_view()
+                            load_historical_message(response, question_context)
                         
                         # Add a spacer between rows for better visual separation
                         st.sidebar.write("---")
