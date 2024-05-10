@@ -826,12 +826,12 @@ def show_main_section():
                     cursor.execute("DELETE FROM responses WHERE responses = %s", (response,))
                     db.commit()
                     # After the deletion, trigger a rerun of the Streamlit app
-                    st.experimental_rerun()
                 except Exception as e:
                     st.error(f"Error connecting to database: {e}")
                 finally:
                     cursor.close()
                     db.close()
+                    st.rerun()
 
             # Function to display response history in sidebar and handle interaction
             def display_response_history():
