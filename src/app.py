@@ -857,7 +857,7 @@ def show_main_section():
                         # Function to handle delete button click event
                         if delete_button:
                             delete_response_from_db(response)
-                            st.experimental_rerun()  # Rerun the Streamlit app after deletion
+                            st.rerun()  # Rerun the Streamlit app after deletion
 
                         # If a response is clicked, clear current view and load historical message in main view
                         if chats_button:
