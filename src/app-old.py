@@ -860,7 +860,8 @@ def show_main_section():
                 try:
                     db = get_db_connection()
                     cursor = db.cursor()
-                    # Your code to delete the response from the database goes here
+                    # delete the response from the database goes here
+                    cursor.execute("DELETE FROM input_data WHERE responses = %s," (st.session_state_msg_context))
                     cursor.execute("DELETE FROM responses WHERE responses = %s", (response,))
                     db.commit()
                     # After the deletion, trigger a rerun of the Streamlit app
