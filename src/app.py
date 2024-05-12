@@ -25,6 +25,36 @@ def get_db_connection():
         print("Error connecting to database:", err)
         return None  # Or raise a custom exception
   
+
+#3 maximum number of retry attempts for connection
+# Function to make an HTTPS request with retry logic
+def make_https_request_with_retry(url, max_retry_attempts=3):
+    # Loop for the maximum number of retry attempts
+    for attempt in range(max_retry_attempts):
+        try:
+            # Attempt to make the HTTPS request
+            response = requests.get(url)
+            # Check if the request was successful (status code 200)
+            if response.status_code == 200:
+                return response  # Return the response if successful
+            # Raise an exception if the status code is unexpected
+            else:
+                raise requests.exceptions.RequestException(f"Unexpected status code: {response.status_code}")
+        # Handle timeout errors
+        except requests.exceptions.Timeout:
+            if attempt < max_retry_attempts - 1:
+                print(f"Connection attempt {attempt+1} timed out. Retrying...")
+            else:
+                print("Connection timed out after multiple attempts.")
+        # Handle other request exceptions
+        except requests.exceptions.RequestException as e:
+            if attempt < max_retry_attempts - 1:
+                print("An error occurred:", e, "Retrying...")
+            else:
+                print("Maximum retry attempts reached.")
+
+    return None  # Return None if all attempts fail
+
 #@st.cache_resource
 #def get_manager():
  #   return stx.CookieManager()
@@ -179,11 +209,11 @@ def show_main_section():
      auth_section.empty() # Clear authentication section
      with main_section:
         st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
-        st.write(f"Active Status value: {active_status}")#for debuggin
+       # st.write(f"Active Status value: {active_status}")#for debuggin
         st.sidebar.write(f"Welcome, {st.session_state['hf_email']}!")
         showlogout_page()
-        st.write(f"User session state value: {st.session_state['user']}")#for debugging
-        st.write(f"Active Status value: {active_status}")#for debugging
+        #st.write(f"User session state value: {st.session_state['user']}")#for debugging
+       # st.write(f"Active Status value: {active_status}")#for debugging
 
         if st.session_state.email and st.session_state.user and login_status:
 
@@ -288,8 +318,9 @@ def show_main_section():
                 # Send prompt to chatbot and get response
                 chatbot = hugchat.ChatBot(cookies=cookies.get_dict()) 
 
-                st.write(question_parameters)
-                st.write(question_parameters[3],question_parameters[2],question_parameters[1])
+                #----- Commented out statements for debugging---------
+                #st.write(question_parameters)
+                #st.write(question_parameters[3],question_parameters[2],question_parameters[1])
                 #testing prompts parameters
                 #added prompt templates for the ai to use in the question generation
                 #addional_prompts[0] = Question Type
@@ -297,11 +328,18 @@ def show_main_section():
                 #additional_prompts[2] = Taxonomy Level
                 #additional_prompts[3] = Difficulty level
                 
-                #there are errors in the full prompt
-                #full_prompt does not execute well - problem in the string formatting
+                #------Checking connectivity with the api before processing response----------
+                url = "https://huggingface.co"
+                httpsresponse = make_https_request_with_retry(url)
+                if response:
+                    # Process the response here
+                    print("Response:", httpsresponse.text)
+                else:
+                    print("Failed to make the HTTPS request.")
+                
                 if question_parameters[0] == 'Multiple Choice':
                         
-                        st.write(question_parameters)
+                        #st.write(question_parameters)
 
                         #prompt template for multiple choice => aligning cognitive levels thru prompt tuning the model using few-shot learning
                         if question_parameters[2] == 'Remembering':
@@ -342,7 +380,7 @@ def show_main_section():
 
                                         '''
                             full_prompt = prompt + few_shot_prompt
-                            st.write(full_prompt)# Debugging
+                            #st.write(full_prompt)# Debugging
                             response = chatbot.chat(full_prompt)
                             return response    
 
@@ -391,7 +429,7 @@ def show_main_section():
 
                                             '''
                                 full_prompt = prompt + few_shot_prompt
-                                st.write(full_prompt)# Debugging
+                                #st.write(full_prompt)# Debugging
                                 response = chatbot.chat(full_prompt)
                                 return response
                         elif question_parameters[2] == 'Applying':
@@ -439,7 +477,7 @@ def show_main_section():
                                             * D) All of the above (Correct Answer)
                                         '''
                             full_prompt = prompt + few_shot_prompt
-                            st.write(full_prompt)# Debugging
+                           # st.write(full_prompt)# Debugging
                             response = chatbot.chat(full_prompt)
                             return response
                         
@@ -489,7 +527,7 @@ def show_main_section():
                                         '''
 
                             full_prompt = prompt + few_shot_prompt
-                            st.write(full_prompt)# Debugging
+                          # st.write(full_prompt)# Debugging
                             response = chatbot.chat(full_prompt)
                             return response
 
@@ -532,7 +570,7 @@ def show_main_section():
                                         '''
 
                             full_prompt = prompt + few_shot_prompt
-                            st.write(full_prompt)# Debugging
+                           # st.write(full_prompt)# Debugging
                             response = chatbot.chat(full_prompt)
                             return response
                         
@@ -573,7 +611,7 @@ def show_main_section():
                                                 * D) Hidden content that requires users to hover over certain areas to reveal.   
                                         '''
                             full_prompt = prompt + few_shot_prompt
-                            st.write(full_prompt)# Debugging
+                           # st.write(full_prompt)# Debugging
                             response = chatbot.chat(full_prompt)
                             return response
 
@@ -612,7 +650,7 @@ def show_main_section():
 
                         #prompt template for True or False
                         full_prompt = prompt + few_shot_prompt
-                        st.write(full_prompt)  # Debugging
+                       # st.write(full_prompt)  # Debugging
 
                         response = chatbot.chat(full_prompt)
                         return response
@@ -651,7 +689,7 @@ def show_main_section():
 
                         #prompt template for True or False
                         full_prompt = prompt + few_shot_prompt
-                        st.write(full_prompt)  # Debugging
+                       # st.write(full_prompt)  # Debugging
 
                         response = chatbot.chat(full_prompt)
                         return response
@@ -682,7 +720,7 @@ def show_main_section():
                                         '''
                                 
                         full_prompt = prompt + few_shot_prompt
-                        st.write(full_prompt)  # Debugging
+                        #st.write(full_prompt)  # Debugging
                         response = chatbot.chat(full_prompt)
                         return response 
                     
@@ -701,7 +739,7 @@ def show_main_section():
                                         '''
                                 
                         full_prompt = prompt + few_shot_prompt
-                        st.write(full_prompt)  # Debugging
+                       # st.write(full_prompt)  # Debugging
                         response = chatbot.chat(full_prompt)
                         return response 
                     
@@ -720,7 +758,7 @@ def show_main_section():
                                         '''
                                 
                         full_prompt = prompt + few_shot_prompt
-                        st.write(full_prompt)  # Debugging
+                        #st.write(full_prompt)  # Debugging
                         response = chatbot.chat(full_prompt)
 
                         return response  
@@ -729,7 +767,7 @@ def show_main_section():
                         #prompt template for Fill in the Blanks
                         # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
                         prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-                        st.write(prompt)  # Debugging
+                       # st.write(prompt)  # Debugging
                         response = chatbot.chat(prompt)
                         return response
 
@@ -883,54 +921,17 @@ def show_main_section():
                 # Implement logic to load historical message in main view here
                 st.write(question_context)
                 st.write(response)
-
-            #3 maximum number of retry attempts for connection
-            # Function to make an HTTPS request with retry logic
-            def make_https_request_with_retry(url, max_retry_attempts=3):
-                # Loop for the maximum number of retry attempts
-                for attempt in range(max_retry_attempts):
-                    try:
-                        # Attempt to make the HTTPS request
-                        response = requests.get(url)
-                        # Check if the request was successful (status code 200)
-                        if response.status_code == 200:
-                            return response  # Return the response if successful
-                        # Raise an exception if the status code is unexpected
-                        else:
-                            raise requests.exceptions.RequestException(f"Unexpected status code: {response.status_code}")
-                    # Handle timeout errors
-                    except requests.exceptions.Timeout:
-                        if attempt < max_retry_attempts - 1:
-                            print(f"Connection attempt {attempt+1} timed out. Retrying...")
-                        else:
-                            print("Connection timed out after multiple attempts.")
-                    # Handle other request exceptions
-                    except requests.exceptions.RequestException as e:
-                        if attempt < max_retry_attempts - 1:
-                            print("An error occurred:", e, "Retrying...")
-                        else:
-                            print("Maximum retry attempts reached.")
-                
-                return None  # Return None if all attempts fail
-            
+   
             def main():
-
-                #Checking connectivity with the api
-                url = "https://huggingface.co"
-                response = make_https_request_with_retry(url)
-                if response:
-                    # Process the response here
-                    print("Response:", response.text)
-                else:
-                    print("Failed to make the HTTPS request.")
 
                 # Applying the user input box
                 with input_container:
                     # User input
                     additional_prompts = list(question_params())
-                    print(additional_prompts)
-                    st.write(additional_prompts)#checking the index location of the additional prompts
+                    #print(additional_prompts)
+                    #st.write(additional_prompts)#checking the index location of the additional prompts
                     display_response_history()
+
                     #if user enters needed parameters => enable text input for context
                     if  additional_prompts:
                         user_message = st.text_area("Enter text context:") # taking user provided prompt as input
