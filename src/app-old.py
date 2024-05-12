@@ -42,15 +42,15 @@ def make_https_request_with_retry(url, max_retry_attempts=3):
         # Handle timeout errors
         except requests.exceptions.Timeout:
             if attempt < max_retry_attempts - 1:
-                print(f"Connection attempt {attempt+1} timed out. Retrying...")
+                st.write(f"Connection attempt {attempt+1} timed out. Retrying...")#debug
             else:
-                print("Connection timed out after multiple attempts.")
+                st.write("Connection timed out after multiple attempts. Check your internet connection")#debug
         # Handle other request exceptions
         except requests.exceptions.RequestException as e:
             if attempt < max_retry_attempts - 1:
-                print("An error occurred:", e, "Retrying...")
+                st.write("An error occurred:", e, "Retrying...")#debug
             else:
-                print("Maximum retry attempts reached.")
+                st.write("Maximum retry attempts reached. Check your internet connection")#debug
     return None  # Return None if all attempts fail
   
 #@st.cache_resource
@@ -766,9 +766,7 @@ def show_main_section():
                             full_prompt = prompt + few_shot_prompt
                         # st.write(full_prompt)  # Debugging
                             response = chatbot.chat(full_prompt)
-
                             return response  
-
                         else:
                             #prompt template for Fill in the Blanks
                             # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
@@ -787,58 +785,48 @@ def show_main_section():
             #printings
             def response_ai(user_message, additional_prompts):
                 with response_container:
-
-                    #need to implement table joins to connect the three tables in the database
                     if user_message:
-                        response = generate_response(user_message,additional_prompts)
+                        response = generate_response(user_message, additional_prompts)
                         st.session_state.past.append(user_message)
                         st.session_state.generated.append(response)
 
-                        #inserting record in the input_data table
+                        # Inserting record in the input_data table
                         try:
                             db = get_db_connection()
                             cursor = db.cursor()
                             # Check for email availability
                             cursor.execute("SELECT * FROM user WHERE user_email = %s", (st.session_state.email,))
                             user = cursor.fetchone()
-                           
-                           # user_email = user[1] 
+
                             if user:
-                                user_id = user[0]
+                                user_id = user[0]  # Getting user_id
                                 st.write(user_id)
-                                st.write(st.session_state.msg_context)#for debugging
-                                cursor.execute("INSERT INTO input_data (questions_context, user_id) VALUES (%s, %s)", (st.session_state.msg_context, user_id))
-                                # Get the data_id of the newly inserted record
-                                cursor.execute("SELECT LAST_INSERT_ID()")
+                                cursor.execute("INSERT INTO input_data (questions_context, user_id) VALUES (%s, %s)",
+                                            (st.session_state.msg_context, user_id))# Insert user question context  into input_data table
+                                cursor.execute("SELECT LAST_INSERT_ID()")  # Get the data_id of the newly inserted record
                                 data_id = cursor.fetchone()[0]
 
                                 # Insert AI-generated response into responses table
-                                #printing in the web app 
-                            for i in range(len(st.session_state['generated'])):
-                                #st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-                                #st.write(st.session_state['generated'][i], key=str(i))
-                                #generated_text = str(st.session_state.generated)
-
-                                if st.session_state.generated:#trying to fix the empty response content in the db
-                                    cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)", (str(st.session_state['generated'][i]), data_id))
-                                    db.commit()
-                                    st.success("Successfully stored in the database!")
+                                for generated_response in st.session_state['generated']:
+                                    cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
+                                                (str(generated_response), data_id))
+                                db.commit()
+                                st.success("Successfully stored in the database!")
                             else:
-                                st.error("User not found.")  
+                                st.error("User not found.")
                         except Exception as e:
                             st.error(f"Error connecting to database: {e}")
                         finally:
-                             cursor.close()  # Ensure cursor is closed even in case of exceptions
-                             db.close()  # Ensure database connection is closed
-                             st.rerun() # After the insertion, trigger a rerun of the Streamlit app-use to refresh chat history, renders latest response
+                            cursor.close()  # Ensure cursor is closed even in case of exceptions
+                            db.close()  # Ensure database connection is closed
+                            st.rerun()  # After the insertion, trigger a rerun of the Streamlit app to refresh chat history and render the latest response
+
                     
-                    if st.session_state['generated']:
+                    #if st.session_state['generated']:
 
                         #printing in the web app 
-                        for i in range(len(st.session_state['generated'])):
-                            st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-                            st.write(st.session_state['generated'][i], key=str(i))
-
+                      #  for i in range(len(st.session_state['generated'])):
+                         
             #--------Implementing the Response History Feature--------#--------Implementing the Response History Feature-----------
             def get_response_history_from_db():
                 try:
@@ -934,7 +922,7 @@ def show_main_section():
                 st.write(response)
  
             def main():
-
+                get_db_connection()#checking database connection
                 # Applying the user input box
                 with input_container:
                     # User input
@@ -950,6 +938,7 @@ def show_main_section():
                                 st.session_state.msg_context = user_message
                                 with st.spinner('Wait for it...'):
                                     response_ai(user_message, additional_prompts)
+                                    st.rerun()#use to terminate another insertion in db once the questions are generated
                             else:
                                 st.warning("Missing input fields.") 
 
