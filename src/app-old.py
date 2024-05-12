@@ -25,6 +25,34 @@ def get_db_connection():
         print("Error connecting to database:", err)
         return None  # Or raise a custom exception
   
+ #3 maximum number of retry attempts for connection
+# Function to make an HTTPS request with retry logic
+def make_https_request_with_retry(url, max_retry_attempts=3):
+    # Loop for the maximum number of retry attempts
+    for attempt in range(max_retry_attempts):
+        try:
+            # Attempt to make the HTTPS request
+            response = requests.get(url)
+            # Check if the request was successful (status code 200)
+            if response.status_code == 200:
+                return response  # Return the response if successful
+            # Raise an exception if the status code is unexpected
+            else:
+                raise requests.exceptions.RequestException(f"Unexpected status code: {response.status_code}")
+        # Handle timeout errors
+        except requests.exceptions.Timeout:
+            if attempt < max_retry_attempts - 1:
+                print(f"Connection attempt {attempt+1} timed out. Retrying...")
+            else:
+                print("Connection timed out after multiple attempts.")
+        # Handle other request exceptions
+        except requests.exceptions.RequestException as e:
+            if attempt < max_retry_attempts - 1:
+                print("An error occurred:", e, "Retrying...")
+            else:
+                print("Maximum retry attempts reached.")
+    return None  # Return None if all attempts fail
+  
 #@st.cache_resource
 #def get_manager():
  #   return stx.CookieManager()
@@ -179,11 +207,11 @@ def show_main_section():
      auth_section.empty() # Clear authentication section
      with main_section:
         st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
-        st.write(f"Active Status value: {active_status}")#for debuggin
+       # st.write(f"Active Status value: {active_status}")#for debuggin
         st.sidebar.write(f"Welcome, {st.session_state['hf_email']}!")
         showlogout_page()
-        st.write(f"User session state value: {st.session_state['user']}")#for debugging
-        st.write(f"Active Status value: {active_status}")#for debugging
+       # st.write(f"User session state value: {st.session_state['user']}")#for debugging
+       # st.write(f"Active Status value: {active_status}")#for debugging
 
         if st.session_state.email and st.session_state.user and login_status:
 
@@ -288,7 +316,7 @@ def show_main_section():
                 # Send prompt to chatbot and get response
                 chatbot = hugchat.ChatBot(cookies=cookies.get_dict()) 
 
-                 #----- Commented out statements for debugging---------
+                #----- Commented out statements for debugging---------
                 #st.write(question_parameters)
                 #st.write(question_parameters[3],question_parameters[2],question_parameters[1])
                 #testing prompts parameters
@@ -297,63 +325,110 @@ def show_main_section():
                 #additional_prompts[1] = Question Number
                 #additional_prompts[2] = Taxonomy Level
                 #additional_prompts[3] = Difficulty level
-                 #------Checking connectivity with the api before processing response----------
+                
+
+                #------Checking connectivity with the api before processing response----------
                 url = "https://huggingface.co"
                 httpsresponse = make_https_request_with_retry(url)
-                if response:
+                #---If connection succesful proceed to question generation--------------
+                if httpsresponse:
                     # Process the response here
-                    print("Response:", httpsresponse.text)
-                else:
-                    print("Failed to make the HTTPS request.")
-                
-                if question_parameters[0] == 'Multiple Choice':
+                    #st.write("Response:", httpsresponse.text)#debugging
                         
-                        st.write(question_parameters)
+                    if question_parameters[0] == 'Multiple Choice':
+                            #prompt template for multiple choice => aligning cognitive levels thru prompt tuning the model using few-shot learning
+                            if question_parameters[2] == 'Remembering':
+                                #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+                                prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+                            
+                                #feeding sample data for the llm for optimization of responses
+                                few_shot_prompt = '''
+                                                For example:
 
-                        #prompt template for multiple choice => aligning cognitive levels thru prompt tuning the model using few-shot learning
-                        if question_parameters[2] == 'Remembering':
-                            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-                            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-                        
-                            #feeding sample data for the llm for optimization of responses
-                            few_shot_prompt = '''
-                                            For example:
+                                                **Question:** Who wrote the novel "Noli Me Tangere"?
 
-                                            **Question:** Who wrote the novel "Noli Me Tangere"?
+                                                * A) Jose Rizal (Correct Answer)
+                                                * B) Andres Bonifacio
+                                                * C) Emilio Aguinaldo
+                                                * D) Marcelo H. del Pilar
 
-                                            * A) Jose Rizal (Correct Answer)
-                                            * B) Andres Bonifacio
-                                            * C) Emilio Aguinaldo
-                                            * D) Marcelo H. del Pilar
+                                            **Question:** What is the chemical symbol for oxygen?
 
-                                        **Question:** What is the chemical symbol for oxygen?
+                                                    * A) O (Correct Answer)
+                                                    * B) H
+                                                    * C) Au
+                                                    * D) Na
 
-                                                * A) O (Correct Answer)
-                                                * B) H
-                                                * C) Au
-                                                * D) Na
+                                            **Question:** Question: In which year did the Philippine Revolution against Spanish colonization begin?
 
-                                        **Question:** Question: In which year did the Philippine Revolution against Spanish colonization begin?
+                                                    * A) 1896 (Correct Answer)
+                                                    * B) 1898
+                                                    * C) 1872
+                                                    * D) 1892
 
-                                                * A) 1896 (Correct Answer)
-                                                * B) 1898
-                                                * C) 1872
-                                                * D) 1892
+                                                **Question:** What is the formula for calculating the area of a rectangle?
 
-                                            **Question:** What is the formula for calculating the area of a rectangle?
+                                                * A) Length * Width (Correct Answer)
+                                                * B) Length + Width
+                                                * C) Length ÷ Width
+                                                * D) Length - Width
 
-                                            * A) Length * Width (Correct Answer)
-                                            * B) Length + Width
-                                            * C) Length ÷ Width
-                                            * D) Length - Width
+                                            '''
+                                full_prompt = prompt + few_shot_prompt
+                                #st.write(full_prompt)# Debugging
+                                response = chatbot.chat(full_prompt)
+                                return response    
 
-                                        '''
-                            full_prompt = prompt + few_shot_prompt
-                           # st.write(full_prompt)# Debugging
-                            response = chatbot.chat(full_prompt)
-                            return response    
+                            elif question_parameters[2] == 'Understanding':
+                                    #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+                                    prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
 
-                        elif question_parameters[2] == 'Understanding':
+                                    #feeding sample data for the llm for optimization of responses
+                                    few_shot_prompt = '''
+                                                    For example:
+
+                                                    **Question:** Which statement best explains the concept of natural selection?
+                                                    
+                                                        * A) Animals adapt to their environments over time.
+                                                        * B) Evolution occurs due to random genetic mutations.
+                                                        * C) Organisms that are better suited to their environment survive and reproduce. (Correct Answer)
+                                                        * D) All species share a common ancestor
+                                                    
+                                                    **Question:** What is the main idea of the theory of relativity proposed by Albert Einstein?
+
+                                                        * A) Time travel is possible.
+                                                        * B) Gravity is caused by the curvature of space-time. (Correct Answer)
+                                                        * C) Energy cannot be created or destroyed.
+                                                        * D) Light behaves as both a wave and a particle.
+
+                                                    **Question:** What is the main idea of the theory of relativity proposed by Albert Einstein?
+
+                                                    * A) Time travel is possible.
+                                                    * B) Gravity is caused by the curvature of space-time. (Correct Answer)
+                                                    * C) Energy cannot be created or destroyed.
+                                                    * D) Light behaves as both a wave and a particle.
+
+                                                    **Question:** Which of the following best describes the concept of cultural relativism?
+
+                                                    * A) All cultures are equally valid.
+                                                    * B) There are universal moral truths
+                                                    * C) Cultural norms should be judged based on their own context. (Correct Answer)
+                                                    * D) Cultural diversity is harmful to society.
+
+                                                    **Question:** What is the significance of the Magna Carta in English history?
+
+                                                    * A) It established the principles of democracy.
+                                                    * B) It granted certain rights to English nobles. (Correct Answer)
+                                                    * C) It abolished the monarchy.
+                                                    * D) It declared war on France.
+
+                                                '''
+                                    full_prompt = prompt + few_shot_prompt
+                                    #st.write(full_prompt)# Debugging
+                                    response = chatbot.chat(full_prompt)
+                                    return response
+                            elif question_parameters[2] == 'Applying':
+
                                 #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
                                 prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
 
@@ -361,384 +436,352 @@ def show_main_section():
                                 few_shot_prompt = '''
                                                 For example:
 
-                                                **Question:** Which statement best explains the concept of natural selection?
+                                                **Question:** If the radius of a circle is 5 cm, what is its area?
                                                 
-                                                    * A) Animals adapt to their environments over time.
-                                                    * B) Evolution occurs due to random genetic mutations.
-                                                    * C) Organisms that are better suited to their environment survive and reproduce. (Correct Answer)
-                                                    * D) All species share a common ancestor
+                                                    * A) 10π cm²
+                                                    * B) 25π cm² (Correct Answer)
+                                                    * C) 50 cm²
+                                                    * D) 125π cm²
                                                 
-                                                **Question:** What is the main idea of the theory of relativity proposed by Albert Einstein?
+                                                **Question:** If a car travels at a constant speed of 60 km/h for 3 hours, how far does it travel?
 
-                                                    * A) Time travel is possible.
-                                                    * B) Gravity is caused by the curvature of space-time. (Correct Answer)
-                                                    * C) Energy cannot be created or destroyed.
-                                                    * D) Light behaves as both a wave and a particle.
+                                                    * A) 120 km
+                                                    * B) 180 km (Correct Answer)
+                                                    * C) 240 km
+                                                    * D) 360 km
 
-                                                **Question:** What is the main idea of the theory of relativity proposed by Albert Einstein?
+                                                **Question:** Which of the following scenarios best illustrates the concept of opportunity cost?
 
-                                                * A) Time travel is possible.
-                                                * B) Gravity is caused by the curvature of space-time. (Correct Answer)
-                                                * C) Energy cannot be created or destroyed.
-                                                * D) Light behaves as both a wave and a particle.
+                                                * A) Choosing to spend money on a new phone instead of saving for college.
+                                                * B) Spending money on groceries instead of dining out.
+                                                * C) Investing in stocks instead of bonds.
+                                                * D) Using extra time to study for an exam instead of watching TV. (Correct Answer)
 
-                                                **Question:** Which of the following best describes the concept of cultural relativism?
+                                                **Question:** If a chemical reaction requires 20 grams of reactant A and 30 grams of reactant B, how much product will be produced?
 
-                                                * A) All cultures are equally valid.
-                                                * B) There are universal moral truths
-                                                * C) Cultural norms should be judged based on their own context. (Correct Answer)
-                                                * D) Cultural diversity is harmful to society.
+                                                * A) 50 grams
+                                                * B) 40 grams
+                                                * C) 70 grams (Correct Answer)
+                                                * D) 100 grams
 
-                                                **Question:** What is the significance of the Magna Carta in English history?
+                                                **Question:** In a programming task, if you want to sort an array in ascending order, which algorithm would you most likely use?
 
-                                                * A) It established the principles of democracy.
-                                                * B) It granted certain rights to English nobles. (Correct Answer)
-                                                * C) It abolished the monarchy.
-                                                * D) It declared war on France.
-
+                                                * A) Bubble Sort
+                                                * B) Merge Sort
+                                                * C) Quick Sort
+                                                * D) All of the above (Correct Answer)
                                             '''
                                 full_prompt = prompt + few_shot_prompt
-                               # st.write(full_prompt)# Debugging
+                            # st.write(full_prompt)# Debugging
                                 response = chatbot.chat(full_prompt)
                                 return response
-                        elif question_parameters[2] == 'Applying':
+                            
+                            elif question_parameters[2] == 'Analyzing':
 
-                            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-                            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+                                #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+                                prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
 
-                            #feeding sample data for the llm for optimization of responses
-                            few_shot_prompt = '''
-                                            For example:
+                                #feeding sample data for the llm for optimization of responses
+                                few_shot_prompt = '''
+                                                For example:
 
-                                            **Question:** If the radius of a circle is 5 cm, what is its area?
-                                            
-                                                * A) 10π cm²
-                                                * B) 25π cm² (Correct Answer)
-                                                * C) 50 cm²
-                                                * D) 125π cm²
-                                            
-                                            **Question:** If a car travels at a constant speed of 60 km/h for 3 hours, how far does it travel?
+                                                **Question:**  Which of the following best explains the significance of a control group in an experiment?
+                                                
+                                                    * A) It ensures that the experiment is conducted ethically.
+                                                    * B) It provides a baseline for comparison to determine the effect of the independent variable. (Correct Answer)
+                                                    * C) It allows researchers to make predictions about future outcomes
+                                                    * D) It ensures that the results of the experiment are valid.
+                                                
+                                                **Question:** In a scientific experiment investigating plant growth, which of the following variables would be considered the independent variable?
 
-                                                * A) 120 km
-                                                * B) 180 km (Correct Answer)
-                                                * C) 240 km
-                                                * D) 360 km
+                                                    * A) The type of soil used
+                                                    * B) The amount of sunlight received.
+                                                    * C) The frequency of watering.
+                                                    * D)  The presence or absence of fertilizer. (Correct Answer)
 
-                                            **Question:** Which of the following scenarios best illustrates the concept of opportunity cost?
+                                                **Question:** Given the graph of a quadratic function, which of the following statements about its vertex is true?
 
-                                            * A) Choosing to spend money on a new phone instead of saving for college.
-                                            * B) Spending money on groceries instead of dining out.
-                                            * C) Investing in stocks instead of bonds.
-                                            * D) Using extra time to study for an exam instead of watching TV. (Correct Answer)
+                                                * A) It is the highest point on the graph
+                                                * B) It lies on the x-axis.
+                                                * C) It is the point where the derivative is zero. (Correct Answer)
+                                                * D) It is always at the origin.
 
-                                            **Question:** If a chemical reaction requires 20 grams of reactant A and 30 grams of reactant B, how much product will be produced?
+                                                **Question:** if g(x) = √x+4, what is the domain of the function?
 
-                                            * A) 50 grams
-                                            * B) 40 grams
-                                            * C) 70 grams (Correct Answer)
-                                            * D) 100 grams
+                                                * A) x ≥ -4 (Correct Answer)
+                                                * B) x ≤ -4
+                                                * C) x > 4
+                                                * D) x < -4
 
-                                            **Question:** In a programming task, if you want to sort an array in ascending order, which algorithm would you most likely use?
+                                                **Question:** When analyzing the efficiency of algorithms, which of the following factors is most important to consider?
 
-                                            * A) Bubble Sort
-                                            * B) Merge Sort
-                                            * C) Quick Sort
-                                            * D) All of the above (Correct Answer)
-                                        '''
-                            full_prompt = prompt + few_shot_prompt
-                            #st.write(full_prompt)# Debugging
-                            response = chatbot.chat(full_prompt)
-                            return response
-                        
-                        elif question_parameters[2] == 'Analyzing':
+                                                * A) Syntax
+                                                * B) Runtime complexity (Correct Answer)
+                                                * C) Variable naming conventions
+                                                * D) Code readability
+                                            '''
 
-                            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-                            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+                                full_prompt = prompt + few_shot_prompt
+                                #st.write(full_prompt)# Debugging
+                                response = chatbot.chat(full_prompt)
+                                return response
 
-                            #feeding sample data for the llm for optimization of responses
-                            few_shot_prompt = '''
-                                            For example:
+                            elif question_parameters[2] == 'Evaluating':
+                                #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+                                prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
 
-                                            **Question:**  Which of the following best explains the significance of a control group in an experiment?
-                                            
-                                                * A) It ensures that the experiment is conducted ethically.
-                                                * B) It provides a baseline for comparison to determine the effect of the independent variable. (Correct Answer)
-                                                * C) It allows researchers to make predictions about future outcomes
-                                                * D) It ensures that the results of the experiment are valid.
-                                            
-                                            **Question:** In a scientific experiment investigating plant growth, which of the following variables would be considered the independent variable?
+                                #feeding sample data for the llm for optimization of responses
+                                few_shot_prompt = '''
+                                                For example:
 
-                                                * A) The type of soil used
-                                                * B) The amount of sunlight received.
-                                                * C) The frequency of watering.
-                                                * D)  The presence or absence of fertilizer. (Correct Answer)
+                                                **Question:** Which of the following marketing strategies would be most effective in reaching a target audience of young adults?
+                                                
+                                                    * A) Television commercials.
+                                                    * B) Social media advertising. (Correct Answer)
+                                                    * C) Newspaper ads.
+                                                    * D) Billboards.
+                                                
+                                                **Question:** Which of the following arguments is most convincing in support of renewable energy sources?
 
-                                            **Question:** Given the graph of a quadratic function, which of the following statements about its vertex is true?
+                                                    * A) Renewable energy is environmentally friendly.
+                                                    * B) Renewable energy creates jobs and stimulates economic growth.
+                                                    * C) Renewable energy reduces dependence on fossil fuels and decreases greenhouse gas emissions. (Correct Answer)
+                                                    * D) All of the above.
 
-                                            * A) It is the highest point on the graph
-                                            * B) It lies on the x-axis.
-                                            * C) It is the point where the derivative is zero. (Correct Answer)
-                                            * D) It is always at the origin.
+                                                **Question:** Which of the following scenarios presents the greatest ethical dilemma?
 
-                                            **Question:** if g(x) = √x+4, what is the domain of the function?
+                                                * A) A doctor falsifies medical records to protect a patient's privacy.
+                                                * B) An employee reports a coworker for unethical behavior.
+                                                * C) A company knowingly sells a defective product to consumers. (Correct Answer)
+                                                * D) A student cheats on an exam to maintain a high GPA.
 
-                                            * A) x ≥ -4 (Correct Answer)
-                                            * B) x ≤ -4
-                                            * C) x > 4
-                                            * D) x < -4
+                                                **Question:**  Which of the following criteria would you use to evaluate the effectiveness of a government policy?
 
-                                            **Question:** When analyzing the efficiency of algorithms, which of the following factors is most important to consider?
-
-                                            * A) Syntax
-                                            * B) Runtime complexity (Correct Answer)
-                                            * C) Variable naming conventions
-                                            * D) Code readability
-                                        '''
-
-                            full_prompt = prompt + few_shot_prompt
-                           # st.write(full_prompt)# Debugging
-                            response = chatbot.chat(full_prompt)
-                            return response
-
-                        elif question_parameters[2] == 'Evaluating':
-                            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-                            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-
-                            #feeding sample data for the llm for optimization of responses
-                            few_shot_prompt = '''
-                                            For example:
-
-                                            **Question:** Which of the following marketing strategies would be most effective in reaching a target audience of young adults?
-                                            
-                                                * A) Television commercials.
-                                                * B) Social media advertising. (Correct Answer)
-                                                * C) Newspaper ads.
-                                                * D) Billboards.
-                                            
-                                            **Question:** Which of the following arguments is most convincing in support of renewable energy sources?
-
-                                                * A) Renewable energy is environmentally friendly.
-                                                * B) Renewable energy creates jobs and stimulates economic growth.
-                                                * C) Renewable energy reduces dependence on fossil fuels and decreases greenhouse gas emissions. (Correct Answer)
-                                                * D) All of the above.
-
-                                            **Question:** Which of the following scenarios presents the greatest ethical dilemma?
-
-                                            * A) A doctor falsifies medical records to protect a patient's privacy.
-                                            * B) An employee reports a coworker for unethical behavior.
-                                            * C) A company knowingly sells a defective product to consumers. (Correct Answer)
-                                            * D) A student cheats on an exam to maintain a high GPA.
-
-                                            **Question:**  Which of the following criteria would you use to evaluate the effectiveness of a government policy?
-
-                                            * A) Economic impact.
-                                            * B) Social equity.
-                                            * C) Environmental sustainability.
-                                            * D) All of the above (Correct Answer)
-
-                                        '''
-
-                            full_prompt = prompt + few_shot_prompt
-                            #st.write(full_prompt)# Debugging
-                            response = chatbot.chat(full_prompt)
-                            return response
-                        
-                        elif question_parameters[2] == 'Creating':
-                            #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
-                            prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-
-                            #feeding sample data for the llm for optimization of responses
-                            few_shot_prompt = '''
-                                            For example:
-
-                                            **Question:** If you were tasked with designing a new product to solve a common problem, what features would you include?
-
-                                                * A) Increased durability and reliability.
-                                                * B) User-friendly interface and intuitive design.
-                                                * C) Integration of cutting-edge technology.
+                                                * A) Economic impact.
+                                                * B) Social equity.
+                                                * C) Environmental sustainability.
                                                 * D) All of the above (Correct Answer)
 
-                                            **Question:** You have been tasked with designing a mobile app to help students learn programming concepts. Which of the following features would you prioritize to ensure an engaging and effective learning experience?
+                                            '''
 
-                                                * A) A virtual coding playground where students can write and test their code.
-                                                * B) Interactive tutorials with step-by-step instructions and real-world examples. (Correct Answer)
-                                                * C) A leaderboard to track students' progress and encourage healthy competition.
-                                                * D) Social media integration for students to share their coding achievements with friends.
+                                full_prompt = prompt + few_shot_prompt
+                                #st.write(full_prompt)# Debugging
+                                response = chatbot.chat(full_prompt)
+                                return response
+                            
+                            elif question_parameters[2] == 'Creating':
+                                #Generate `{num_questions}` multiple choice questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure each question has at least 4 answer choices and a clear answer key.
+                                prompt = "Exam questions creation: Generate {} multiple choice questions at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy based on this context: {} Ensure each question has at least 4 answer choices and a clear answer key. The format of the questions must be like a formal exam paper.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
 
-                                            **Question:** Imagine you are planning a science fair project to investigate the effects of different types of soil on plant growth. Which of the following experimental designs would be most suitable for testing your hypothesis?
+                                #feeding sample data for the llm for optimization of responses
+                                few_shot_prompt = '''
+                                                For example:
 
-                                                * A) Watering plants with varying amounts of water daily.
-                                                * B) Using identical pots and seeds but different types of soil for each group. (Correct Answer)
-                                                * C) Keeping all variables constant except for the amount of sunlight received.
-                                                * D) Observing plants grown in different locations around the school.
+                                                **Question:** If you were tasked with designing a new product to solve a common problem, what features would you include?
 
-                                            **Question:** Suppose you are developing a website for a local business. Which of the following design elements would you include to enhance user experience and accessibility?
+                                                    * A) Increased durability and reliability.
+                                                    * B) User-friendly interface and intuitive design.
+                                                    * C) Integration of cutting-edge technology.
+                                                    * D) All of the above (Correct Answer)
 
-                                                * A) High-resolution images and flashy animations.
-                                                * B) Clear navigation menus and intuitive layout. (Correct Answer)
-                                                * C) Auto-playing videos and background music.
-                                                * D) Hidden content that requires users to hover over certain areas to reveal.   
-                                        '''
+                                                **Question:** You have been tasked with designing a mobile app to help students learn programming concepts. Which of the following features would you prioritize to ensure an engaging and effective learning experience?
+
+                                                    * A) A virtual coding playground where students can write and test their code.
+                                                    * B) Interactive tutorials with step-by-step instructions and real-world examples. (Correct Answer)
+                                                    * C) A leaderboard to track students' progress and encourage healthy competition.
+                                                    * D) Social media integration for students to share their coding achievements with friends.
+
+                                                **Question:** Imagine you are planning a science fair project to investigate the effects of different types of soil on plant growth. Which of the following experimental designs would be most suitable for testing your hypothesis?
+
+                                                    * A) Watering plants with varying amounts of water daily.
+                                                    * B) Using identical pots and seeds but different types of soil for each group. (Correct Answer)
+                                                    * C) Keeping all variables constant except for the amount of sunlight received.
+                                                    * D) Observing plants grown in different locations around the school.
+
+                                                **Question:** Suppose you are developing a website for a local business. Which of the following design elements would you include to enhance user experience and accessibility?
+
+                                                    * A) High-resolution images and flashy animations.
+                                                    * B) Clear navigation menus and intuitive layout. (Correct Answer)
+                                                    * C) Auto-playing videos and background music.
+                                                    * D) Hidden content that requires users to hover over certain areas to reveal.   
+                                            '''
+                                full_prompt = prompt + few_shot_prompt
+                                #st.write(full_prompt)# Debugging
+                                response = chatbot.chat(full_prompt)
+                                return response
+
+                    elif question_parameters[0] == 'True or False':
+                        if question_parameters[2] == 'Remembering':
+                            # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
+                            prompt = "Exam questions creation: Generate {} True or False test questions at a {} difficulty level that is align with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer use this format: ".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+                            #feeding sample data for the llm for optimization of responses
+                            few_shot_prompt = '''
+                                            For example: 
+                                            
+                                            **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item.
+
+                                            **Question:** **Create 4 underscores for the supposed answer** The sum of the interior angles of a triangle is 180 degrees.    
+
+                                                *Answer: True
+                                            
+                                            **Question:** **_____** Water boils at 100 degrees Celsius at sea level.    
+
+                                                *Answer: True
+                                            
+                                                    
+                                            **Question:** **_____** HTML is a programming language. 
+
+                                                *Answer: False
+
+                                            **Question:** **_____** A prime number is divisible by only one and itself.
+
+                                                *Answer: True
+                                            
+                                            **Question:** **_____**  Photosynthesis is the process by which plants convert carbon dioxide and water into oxygen and glucose.
+
+                                                *Answer: True
+
+                                            '''
+
+                            #prompt template for True or False
                             full_prompt = prompt + few_shot_prompt
-                            #st.write(full_prompt)# Debugging
+                            #st.write(full_prompt)  # Debugging
+
                             response = chatbot.chat(full_prompt)
                             return response
 
-                elif question_parameters[0] == 'True or False':
-                    if question_parameters[2] == 'Remembering':
-                        # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
-                        prompt = "Exam questions creation: Generate {} True or False test questions at a {} difficulty level that is align with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer use this format: ".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-                        #feeding sample data for the llm for optimization of responses
-                        few_shot_prompt = '''
-                                        For example: 
-                                        
-                                        **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item.
+                        elif question_parameters[2] == 'Understanding':
 
-                                        **Question:** **Create 4 underscores for the supposed answer** The sum of the interior angles of a triangle is 180 degrees.    
+                            # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
+                            prompt = "Exam questions creation: Generate {} True or False test questions at a {} difficulty level that is align with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer use this format: ".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
 
-                                            *Answer: True
-                                        
-                                        **Question:** **_____** Water boils at 100 degrees Celsius at sea level.    
-
-                                            *Answer: True
-                                        
-                                                
-                                        **Question:** **_____** HTML is a programming language. 
-
-                                            *Answer: False
-
-                                        **Question:** **_____** A prime number is divisible by only one and itself.
-
-                                            *Answer: True
-                                        
-                                        **Question:** **_____**  Photosynthesis is the process by which plants convert carbon dioxide and water into oxygen and glucose.
-
-                                            *Answer: True
-
-                                        '''
-
-                        #prompt template for True or False
-                        full_prompt = prompt + few_shot_prompt
-                        #st.write(full_prompt)  # Debugging
-
-                        response = chatbot.chat(full_prompt)
-                        return response
-
-                    elif question_parameters[2] == 'Understanding':
-
-                        # Generate `{num_questions}` True or False statements at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable)
-                        prompt = "Exam questions creation: Generate {} True or False test questions at a {} difficulty level that is align with the {} cognitive level of bloom's taxonomy based in this context: {} Ensure each question has a clear answer use this format: ".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-
-                        #feeding sample data for the llm for optimization of responses
-                        few_shot_prompt = '''
-                                        For example: 
-                                        
-                                        **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item.
-
-                                        **Question:** **Create 4 underscores for the supposed answer** If a triangle has sides of lengths 3, 4, and 5 units, it is a right triangle..    
-
-                                            *Answer: True
-                                        
-                                        **Question:** **_____** Electrons are negatively charged particles found in the nucleus of an atom.
-
-                                            *Answer: False
-
-                                        **Question:** **_____** Object-oriented programming focuses on breaking down a program into small, reusable pieces called functions.
-
-                                            *Answer: False
-                                        
-                                        **Question:** **_____** The equation y = mx + b represents a linear function.
-
-                                            *Answer: True
-                                        
-                                        **Question:** **_____** Newton's first law of motion states that an object at rest will remain at rest unless acted upon by an unbalanced force.
-
-                                            *Answer: True    
-                                        '''
-
-                        #prompt template for True or False
-                        full_prompt = prompt + few_shot_prompt
-                       # st.write(full_prompt)  # Debugging
-
-                        response = chatbot.chat(full_prompt)
-                        return response
-                    else:
-                        return False 
-
-                elif question_parameters[0] == 'Fill in the Blanks':
-                    if question_parameters[2] == 'Remembering':
-                        #prompt template for Fill in the Blanks
-                        # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
-                        prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-                    
-                        #feeding sample data for the llm for optimization of responses
-                        few_shot_prompt = '''
+                            #feeding sample data for the llm for optimization of responses
+                            few_shot_prompt = '''
                                             For example: 
+                                            
+                                            **Instruction: ** Write the T if the statement is True. Otherwise write F if the statement is False. Write the answer before the item.
 
-                                            **Question:** The process by which plants convert sunlight into energy is called _______.
+                                            **Question:** **Create 4 underscores for the supposed answer** If a triangle has sides of lengths 3, 4, and 5 units, it is a right triangle..    
+
+                                                *Answer: True
+                                            
+                                            **Question:** **_____** Electrons are negatively charged particles found in the nucleus of an atom.
+
+                                                *Answer: False
+
+                                            **Question:** **_____** Object-oriented programming focuses on breaking down a program into small, reusable pieces called functions.
+
+                                                *Answer: False
+                                            
+                                            **Question:** **_____** The equation y = mx + b represents a linear function.
+
+                                                *Answer: True
+                                            
+                                            **Question:** **_____** Newton's first law of motion states that an object at rest will remain at rest unless acted upon by an unbalanced force.
+
+                                                *Answer: True    
+                                            '''
+
+                            #prompt template for True or False
+                            full_prompt = prompt + few_shot_prompt
+                        # st.write(full_prompt)  # Debugging
+
+                            response = chatbot.chat(full_prompt)
+                            return response
+                        else:
+                            return False 
+
+                    elif question_parameters[0] == 'Fill in the Blanks':
+
+                        difficulty_level = question_parameters[3]
+                        difficulty_level_map = {
+                            "Easy": 1,  # One blank for Easy difficulty
+                            "Medium": 2,  # Two blanks for Medium difficulty
+                            "Hard": 3   # Three blanks for Hard difficulty
+                            }
                         
-                                                *Answer: photosynthesis
-
-                                            **Question:** The process by which water evaporates from the Earth's surface and condenses back into rain is known as the _______ cycle.
+                        num_blanks = difficulty_level_map.get(difficulty_level, 1)  # Default to 1 blank
+                        if question_parameters[2] == 'Remembering':
+                            #prompt template for Fill in the Blanks
+                            # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
+                            #"Generate `{num_questions}` fill-in-the-blank questions in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question. At a {difficulty_level} difficulty level, each question should have {num_blanks} blank(s)."
+                            prompt = "Exam questions creation: Generate {} fill-in-the-blank question items that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question. At a {} difficulty level, each question should have {} blank(s) and has clear answers.".format(question_parameters[1],question_parameters[2],prompt,question_parameters[3], num_blanks)
                         
-                                                *Answer: water
+                            #feeding sample data for the llm for optimization of responses
+                            few_shot_prompt = '''
+                                                For example: 
 
-                                            **Question:** The three primary colors used in mixing pigments for painting are _______, _______, and ______.
+                                                **Question:** The process by which plants convert sunlight into energy is called _______.
+                            
+                                                    *Answer: photosynthesis
+
+                                                **Question:** The process by which water evaporates from the Earth's surface and condenses back into rain is known as the _______ cycle.
+                            
+                                                    *Answer: water
+
+                                                **Question:** The three primary colors used in mixing pigments for painting are _______, _______, and ______.
+                            
+                                                    *Answer: red, yellow, blue
+                                            '''
+                                    
+                            full_prompt = prompt + few_shot_prompt
+                        # st.write(full_prompt)  # Debugging
+                            response = chatbot.chat(full_prompt)
+                            return response 
                         
-                                                *Answer: red, yellow, blue
-                                        '''
-                                
-                        full_prompt = prompt + few_shot_prompt
-                       # st.write(full_prompt)  # Debugging
-                        response = chatbot.chat(full_prompt)
-                        return response 
-                    
-                    elif question_parameters[2] == 'Understanding':
-                        #prompt template for Fill in the Blanks
-                        # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
-                        prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-                    
-                        #feeding sample data for the llm for optimization of responses
-                        few_shot_prompt = '''
-                                            For example: 
+                        elif question_parameters[2] == 'Understanding':
+                            #prompt template for Fill in the Blanks
+                             # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
+                            #"Generate `{num_questions}` fill-in-the-blank questions in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question. At a {difficulty_level} difficulty level, each question should have {num_blanks} blank(s)."
+                            prompt = "Exam questions creation: Generate {} fill-in-the-blank question items that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question. At a {} difficulty level, each question should have {} blank(s) and has clear answers.".format(question_parameters[1],question_parameters[2],prompt,question_parameters[3], num_blanks)
 
-                                            **Question:** Although both are forms of precipitation, rain and snow differ because _______ determines whether water vapor freezes into ice crystals or falls as liquid droplets.
+                            #feeding sample data for the llm for optimization of responses
+                            few_shot_prompt = '''
+                                                For example: 
+
+                                                **Question:** Although both are forms of precipitation, rain and snow differ because _______ determines whether water vapor freezes into ice crystals or falls as liquid droplets.
+                            
+                                                    *Answer: temperature
+                                            '''
+                                    
+                            full_prompt = prompt + few_shot_prompt
+                        # st.write(full_prompt)  # Debugging
+                            response = chatbot.chat(full_prompt)
+                            return response 
                         
-                                                *Answer: temperature
-                                        '''
-                                
-                        full_prompt = prompt + few_shot_prompt
-                       # st.write(full_prompt)  # Debugging
-                        response = chatbot.chat(full_prompt)
-                        return response 
-                    
-                    elif question_parameters[2] == 'Applying':    
-                        #prompt template for Fill in the Blanks
-                        # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
-                        prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-                    
-                        #feeding sample data for the llm for optimization of responses
-                        few_shot_prompt = '''
-                                            For example: 
+                        elif question_parameters[2] == 'Applying':    
+                            #prompt template for Fill in the Blanks
+                            # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
+                            #"Generate `{num_questions}` fill-in-the-blank questions in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question. At a {difficulty_level} difficulty level, each question should have {num_blanks} blank(s)."
+                            prompt = "Exam questions creation: Generate {} fill-in-the-blank question items that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question. At a {} difficulty level, each question should have {} blank(s) and has clear answers.".format(question_parameters[1],question_parameters[2],prompt,question_parameters[3], num_blanks)
+                            #feeding sample data for the llm for optimization of responses
+                            few_shot_prompt = '''
+                                                For example: 
 
-                                            **Question:**  If you want to increase the speed of a moving object, you would need to apply more _______. 
+                                                **Question:**  If you want to increase the speed of a moving object, you would need to apply more _______. 
+                            
+                                                    *Answer: force
+                                            '''
+                                    
+                            full_prompt = prompt + few_shot_prompt
+                        # st.write(full_prompt)  # Debugging
+                            response = chatbot.chat(full_prompt)
+
+                            return response  
+
+                        else:
+                            #prompt template for Fill in the Blanks
+                            # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
+                            prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
+                        # st.write(prompt)  # Debugging
+                            response = chatbot.chat(prompt)
+                            return response
                         
-                                                *Answer: force
-                                        '''
-                                
-                        full_prompt = prompt + few_shot_prompt
-                       # st.write(full_prompt)  # Debugging
-                        response = chatbot.chat(full_prompt)
-
-                        return response  
-
-                    else:
-                        #prompt template for Fill in the Blanks
-                        # Generate `{num_questions}` fill-in-the-blank questions at a `{difficulty_level}` difficulty level that test {taxonomy_level} knowledge in the area of {subject_area} (if applicable). Ensure the blanks are clearly identified and essential to the question.
-                        prompt = "Exam questions creation: Generate {} fill-in-the-blank question items at a {} difficulty level that is alignn with the {} cognitive level of bloom's taxonomy  based in this context: {} Ensure the blanks are clearly identified and essential to the question and has clear answers.".format(question_parameters[1],question_parameters[3],question_parameters[2],prompt)
-                       # st.write(prompt)  # Debugging
-                        response = chatbot.chat(prompt)
-                        return response
+                #----Abort further processing---------
+                else:
+                    st.warning("Failed to make the HTTPS request.")
+                    st.warning("Check your internet connection and restart the application")
+                    st.stop()
 
             ## Conditional display of AI generated responses as a function of user provided prompts
             #printings
@@ -846,33 +889,37 @@ def show_main_section():
                 response_history = get_response_history_from_db()
 
                 if response_history:
-                    
-                    for i, (formatted_datetime, response, question_context) in enumerate(response_history):#unpacking the different retrieved data in the db
+                    for i, (formatted_datetime, response, question_context) in enumerate(response_history):
                         # Show a snippet of each response in the sidebar
                         truncated_response = response[:50] + "..." if len(response) > 50 else response
-                    
+                        
+                        # Create unique keys for buttons using the index i
+                        chats_button_key = f"chats_button_{i}"
+                        delete_button_key = f"delete_button_{i}"
+                        
                         # Create columns to place response and delete button side by side
                         col1, col2 = st.sidebar.columns([4,1])
-                        chats_button = col1.button(f"{formatted_datetime}: {truncated_response}")
-                        delete_button = col2.button("🗑️", key=f"delete_{i}")  # Delete button/emoji
+                        
+                        # Create buttons with unique keys
+                        chats_button = col1.button(f"{formatted_datetime}: {truncated_response}", key=chats_button_key)
+                        delete_button = col2.button("🗑️", key=delete_button_key)
                         
                         # Function to handle delete button click event
                         if delete_button:
-                            delete_response_from_db(response)  # If delete button/emoji is clicked, delete the response
+                            delete_response_from_db(response)
                             st.rerun()  # Rerun the Streamlit app after deletion
 
                         # If a response is clicked, clear current view and load historical message in main view
                         if chats_button:
-                            clear_chat_view()  # Assuming you have a function to clear the chat view
-                            load_historical_message(response,question_context)  # Function to load historical message in main view
+                            clear_chat_view()
+                            load_historical_message(response, question_context)
                         
                         # Add a spacer between rows for better visual separation
                         st.sidebar.write("---")
                 else:
                     st.sidebar.write("No response history available.")
                 #st.rerun()  # Rerun the Streamlit app after deletion
-
-                
+    
             # Function to clear the current chat view
             def clear_chat_view():
                 st.empty()
@@ -885,53 +932,15 @@ def show_main_section():
                 # Implement logic to load historical message in main view here
                 st.write(question_context)
                 st.write(response)
-
-            #3 maximum number of retry attempts for connection
-            # Function to make an HTTPS request with retry logic
-            def make_https_request_with_retry(url, max_retry_attempts=3):
-                # Loop for the maximum number of retry attempts
-                for attempt in range(max_retry_attempts):
-                    try:
-                        # Attempt to make the HTTPS request
-                        response = requests.get(url)
-                        # Check if the request was successful (status code 200)
-                        if response.status_code == 200:
-                            return response  # Return the response if successful
-                        # Raise an exception if the status code is unexpected
-                        else:
-                            raise requests.exceptions.RequestException(f"Unexpected status code: {response.status_code}")
-                    # Handle timeout errors
-                    except requests.exceptions.Timeout:
-                        if attempt < max_retry_attempts - 1:
-                            print(f"Connection attempt {attempt+1} timed out. Retrying...")
-                        else:
-                            print("Connection timed out after multiple attempts.")
-                    # Handle other request exceptions
-                    except requests.exceptions.RequestException as e:
-                        if attempt < max_retry_attempts - 1:
-                            print("An error occurred:", e, "Retrying...")
-                        else:
-                            print("Maximum retry attempts reached.")
-                
-                return None  # Return None if all attempts fail
-            
+ 
             def main():
-
-                #Checking connectivity with the api
-                url = "https://huggingface.co"
-                response = make_https_request_with_retry(url)
-                if response:
-                    # Process the response here
-                    print("Response:", response.text)
-                else:
-                    print("Failed to make the HTTPS request.")
 
                 # Applying the user input box
                 with input_container:
                     # User input
                     additional_prompts = list(question_params())
                     print(additional_prompts)
-                    st.write(additional_prompts)#checking the index location of the additional prompts
+                    #st.write(additional_prompts)#checking the index location of the additional prompts
                     display_response_history()
                     #if user enters needed parameters => enable text input for context
                     if  additional_prompts:
