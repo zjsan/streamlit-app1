@@ -214,7 +214,7 @@ def show_main_section():
        # st.write(f"Active Status value: {active_status}")#for debugging
 
         if st.session_state.email and st.session_state.user and login_status:
-
+            #Containers for llm and user response
             input_container = st.container()
             #colored_header(label='', description='', color_name='blue-30')
             response_container = st.container()
@@ -781,8 +781,7 @@ def show_main_section():
                     st.warning("Check your internet connection and restart the application")
                     st.stop()
 
-            ## Conditional display of AI generated responses as a function of user provided prompts
-            #printings
+            #Handles the storage of question context and generated responses in the database
             def response_ai(user_message, additional_prompts):
                 with response_container:
                     if user_message:
@@ -800,35 +799,37 @@ def show_main_section():
 
                             if user:
                                 user_id = user[0]  # Getting user_id
-                                st.write(user_id)
+                                # st.write(user_id)
                                 cursor.execute("INSERT INTO input_data (questions_context, user_id) VALUES (%s, %s)",
-                                            (st.session_state.msg_context, user_id))# Insert user question context  into input_data table
+                                                    (st.session_state.msg_context, user_id))  # Insert user question context  into input_data table
                                 cursor.execute("SELECT LAST_INSERT_ID()")  # Get the data_id of the newly inserted record
                                 data_id = cursor.fetchone()[0]
 
                                 # Insert AI-generated response into responses table
-                                if st.session_state.generated:
-                                    for generated_response in st.session_state['generated']:
-                                        cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
-                                                    (str(generated_response), data_id))
+                                if st.session_state.generated:  # Check if generated responses exist
+                                    for generated_response in st.session_state.generated:
+                                        # Only insert if the response is not empty
+                                        if generated_response:
+                                            cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
+                                                        (str(generated_response), data_id))
                                     db.commit()
-                                    st.success("Successfully stored in the database!")
+                                   
+                                else:
+                                    st.warning("No responses generated.")  # Inform user if no responses were generated
+
                             else:
                                 st.error("User not found.")
                         except Exception as e:
                             st.error(f"Error connecting to database: {e}")
                         finally:
+                            st.success("Questions Generated!")
+                            st.success("Check Response History.")
                             cursor.close()  # Ensure cursor is closed even in case of exceptions
                             db.close()  # Ensure database connection is closed
-                            st.rerun()  # After the insertion, trigger a rerun of the Streamlit app to refresh chat history and render the latest response
+                            st.rerun()  # After the insertion, trigger a rerun of the Streamlit app
 
-                    
-                    #if st.session_state['generated']:
 
-                        #printing in the web app 
-                      #  for i in range(len(st.session_state['generated'])):
-                         
-            #--------Implementing the Response History Feature--------#--------Implementing the Response History Feature-----------
+            #--------Implementing the Response History Feature--------
             def get_response_history_from_db():
                 try:
                     db = get_db_connection()
@@ -947,7 +948,7 @@ def show_main_section():
                 with input_container:
                     # User input
                     additional_prompts = list(question_params())
-                    print(additional_prompts)
+                    #print(additional_prompts)
                     #st.write(additional_prompts)#checking the index location of the additional prompts
                     display_response_history()
                     #if user enters needed parameters => enable text input for context
@@ -958,12 +959,13 @@ def show_main_section():
                                 st.session_state.msg_context = user_message
                                 with st.spinner('Wait for it...'):
                                     response_ai(user_message, additional_prompts)
-                                    st.rerun()#use to terminate another insertion in db once the questions are generated
+                                    #st.rerun()#use to terminate another insertion in db once the questions are generated
                             else:
                                 st.warning("Missing input fields.") 
 
             if __name__ == "__main__":
                 main()
+                #st.rerun()
 
 def showlogout_page():
     #initial_login_email =  st.session_state['email']#use for logout
