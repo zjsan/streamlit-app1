@@ -807,11 +807,12 @@ def show_main_section():
                                 data_id = cursor.fetchone()[0]
 
                                 # Insert AI-generated response into responses table
-                                for generated_response in st.session_state['generated']:
-                                    cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
-                                                (str(generated_response), data_id))
-                                db.commit()
-                                st.success("Successfully stored in the database!")
+                                if st.session_state.generated:
+                                    for generated_response in st.session_state['generated']:
+                                        cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
+                                                    (str(generated_response), data_id))
+                                    db.commit()
+                                    st.success("Successfully stored in the database!")
                             else:
                                 st.error("User not found.")
                         except Exception as e:
@@ -855,22 +856,36 @@ def show_main_section():
                     cursor.close()
                     db.close()
 
-            # Function to delete a response from the database
+         # Function to delete a response from the database
             def delete_response_from_db(response):
                 try:
                     db = get_db_connection()
                     cursor = db.cursor()
-                    # delete the response from the database goes here
-                    cursor.execute("DELETE FROM input_data WHERE responses = %s," (st.session_state_msg_context))
+                    
                     cursor.execute("DELETE FROM responses WHERE responses = %s", (response,))
                     db.commit()
-                    # After the deletion, trigger a rerun of the Streamlit app
+
                 except Exception as e:
                     st.error(f"Error connecting to database: {e}")
                 finally:
                     cursor.close()
                     db.close()
-                    st.rerun()
+
+            # Function to delete a response from the database
+            def delete_question_context_from_db(question_context):
+                try:
+                    db = get_db_connection()
+                    cursor = db.cursor()
+                    
+                    # Delete the response and question_context from the database
+                    cursor.execute("DELETE FROM input_data WHERE questions_context = %s", (question_context,))
+                    db.commit()
+
+                except Exception as e:
+                    st.error(f"Error connecting to database: {e}")
+                finally:
+                    cursor.close()
+                    db.close()
 
             # Function to display response history in sidebar and handle interaction
             def display_response_history():
@@ -895,6 +910,9 @@ def show_main_section():
                         
                         # Function to handle delete button click event
                         if delete_button:
+                            print("Delete button clicked for response:", response)  # Debug statement
+                            print("Question context:", question_context)  # Debug statement
+                            delete_question_context_from_db(question_context)
                             delete_response_from_db(response)
                             st.rerun()  # Rerun the Streamlit app after deletion
 
@@ -921,6 +939,7 @@ def show_main_section():
                 # Implement logic to load historical message in main view here
                 st.write(question_context)
                 st.write(response)
+                #st.write(st.session_state.msg_context)
  
             def main():
                 get_db_connection()#checking database connection
