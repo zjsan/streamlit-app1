@@ -166,7 +166,10 @@ def show_auth_page():
             #--------registration part------
             if st.checkbox("Register here"):
                 st.write('Please Register using  your Hugging Face Credentials')
-                st.write('Hugging Face Credentials: ')
+                #Hugging Face Credentials:
+                huggingface_cred = 'https://huggingface.co/join?next=https%3A%2F%2Fhuggingface.co%2Foauth%2Fauthorize%3Fclient_id%3D8f1a1d63-479b-46c8-84cb-521fe9f3222f%26scope%3Dopenid%2520profile%26response_type%3Dcode%26redirect_uri%3Dhttps%253A%252F%252Fhuggingface.co%252Fchat%252Flogin%252Fcallback%26state%3DeyJkYXRhIjp7ImV4cGlyYXRpb24iOjE3MTU1OTYzNjA2NDUsInJlZGlyZWN0VXJsIjoiaHR0cHM6Ly9odWdnaW5nZmFjZS5jby9jaGF0L2xvZ2luL2NhbGxiYWNrIn0sInNpZ25hdHVyZSI6IjE0Zjk5MGMxOTRhYTY3NTY1NWViMzQ2YTcyYTVmN2ZiYmU3OTAyMWQzMzRjMTBkYTc3NWJiOGQxMzBlOTRjZWIifQ%253D%253D'
+                st.write("Click this link: [Hugging Face Credentials](%s)" % huggingface_cred)
+                #st.link_button("Hugging Face Credentials: ", "")
                 with st.form("registration_form"):
                     email = st.text_input("Email")
                     new_password = st.text_input("Password", type="password")
