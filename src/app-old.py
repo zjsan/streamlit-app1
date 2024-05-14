@@ -1,6 +1,7 @@
 import streamlit as st
 import mysql.connector
 import requests
+import re
 from hugchat import hugchat
 from hugchat.login import Login
 
@@ -52,6 +53,19 @@ def make_https_request_with_retry(url, max_retry_attempts=3):
             else:
                 st.write("Maximum retry attempts reached. Check your internet connection")#debug
     return None  # Return None if all attempts fail
+
+def validate_email(email):
+  """
+  This function validates an email address using a regular expression.
+
+  Args:
+      email: The email address to validate.
+
+  Returns:
+      True if the email address is valid, False otherwise.
+  """
+  email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+  return bool(re.fullmatch(email_regex, email))
   
 #@st.cache_resource
 #def get_manager():
@@ -286,7 +300,7 @@ def show_auth_page():
                                 if existing_email:#check if the old email is in the database
                                     if db_user_password:##check if current password exist
                                         if password:#for authentication
-                                            if password == db_user_password:#check if entered current password is equal with user's password in the database
+                                            if password == db_user_password:#check if entered current password is equal with user's password in the database => not working?
                                                 if new_password != db_user_password:#proceed if newly entered password is not the same as the current stored password in the database
                                                     if new_password  == confirm_password_update:#check entered new password confirmation
                                                         if not new_password_db:#if new_password is not yet in the database then proceed to update the old email 
