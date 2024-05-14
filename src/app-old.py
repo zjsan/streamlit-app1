@@ -189,7 +189,7 @@ def show_auth_page():
                     submit_button =  st.form_submit_button('Register')
 
                     if submit_button:
-                        if validate_email(email)
+                        if validate_email(email):
                             if email and new_password and password_confirmation:
                                 if new_password == password_confirmation:
                                     #st.write(email,new_password,password_confirmation) - for debugging
