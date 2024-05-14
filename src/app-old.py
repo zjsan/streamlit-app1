@@ -54,6 +54,8 @@ def make_https_request_with_retry(url, max_retry_attempts=3):
                 st.write("Maximum retry attempts reached. Check your internet connection")#debug
     return None  # Return None if all attempts fail
 
+
+#using regular expression for basic email validation
 def validate_email(email):
   """
   This function validates an email address using a regular expression.
@@ -64,7 +66,7 @@ def validate_email(email):
   Returns:
       True if the email address is valid, False otherwise.
   """
-  email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+  email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$" #The email_regex variable holds the regular expression pattern for validating emails
   return bool(re.fullmatch(email_regex, email))
   
 #@st.cache_resource
@@ -132,7 +134,7 @@ def show_auth_page():
         if st.session_state.email is None:
             #st.write(f"User session state value: {st.session_state['user']}")#for debugging
             #st.write(f"Active Status value: {active_status}")#for debuggin
-            #see code at line 133 first for the login fields
+            #see code at line 177 first for the login fields
             #login functionality and logic
             def login_functionality(login_email,login_password):
                 if login_email and login_password:
@@ -955,8 +957,13 @@ def show_main_section():
                                         if generated_response:
                                             cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
                                                         (str(generated_response), data_id))
-                                    db.commit()
+                                    db.commit()#proceed to inser the record
                                    
+                                    #display the generated questions and question context
+                                    for i in range(len(st.session_state['generated'])):
+                                        st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
+                                        st.write(st.session_state['generated'][i], key=str(i))
+
                                 else:
                                     st.warning("No responses generated.")  # Inform user if no responses were generated
 
