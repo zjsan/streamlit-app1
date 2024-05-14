@@ -250,7 +250,7 @@ def show_auth_page():
                                     cursor.close()
                                     db.close()
                             else:
-                                st.warning('Invalid password confirmation.Please double-check and try again.')
+                                st.warning('Invalid email confirmation.Please double-check and try again.')
                         else:
                             st.error('Please Fill up the form') 
 
@@ -259,7 +259,7 @@ def show_auth_page():
                 #st.write('Please Update Email ')
                 with st.form("update_password_form"):
                     email = st.text_input("Email")
-                    password = st.text_input("Old password")
+                    password = st.text_input("Current password")
                     new_password = st.text_input("New password")
                     confirm_password_update = st.text_input("Confirm password")
                     submit_button =  st.form_submit_button('Save')
