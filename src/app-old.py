@@ -189,33 +189,36 @@ def show_auth_page():
                     submit_button =  st.form_submit_button('Register')
 
                     if submit_button:
-                        if email and new_password and password_confirmation:
-                            if new_password == password_confirmation:
-                                #st.write(email,new_password,password_confirmation) - for debugging
-                                try:
-                                    db = get_db_connection()
-                                    cursor = db.cursor()
-                                    # Check for email availability
-                                    cursor.execute("SELECT * FROM user WHERE user_email = %s", (email,))
-                                    existing_email = cursor.fetchone()
+                        if validate_email(email)
+                            if email and new_password and password_confirmation:
+                                if new_password == password_confirmation:
+                                    #st.write(email,new_password,password_confirmation) - for debugging
+                                    try:
+                                        db = get_db_connection()
+                                        cursor = db.cursor()
+                                        # Check for email availability
+                                        cursor.execute("SELECT * FROM user WHERE user_email = %s", (email,))
+                                        existing_email = cursor.fetchone()
 
-                                    if not existing_email:#if the email is not yet in the database then proceed to the registration logic 
-                                        #st.write(new_password)#for debugging 
-                                        # Insert new user into database
-                                        cursor.execute("INSERT INTO user (user_email, user_password) VALUES (%s, %s)", (email, new_password))
-                                        db.commit()
-                                        st.success("Successfully stored in the database!")  
-                                    else:
-                                        st.error("Email already exists. Please choose another.")
-                                except Exception as e:
-                                    st.error(f"Error connecting to database: {e}")
-                                finally:
-                                    cursor.close()
-                                    db.close()
+                                        if not existing_email:#if the email is not yet in the database then proceed to the registration logic 
+                                            #st.write(new_password)#for debugging 
+                                            # Insert new user into database
+                                            cursor.execute("INSERT INTO user (user_email, user_password) VALUES (%s, %s)", (email, new_password))
+                                            db.commit()
+                                            st.success("Successfully stored in the database!")  
+                                        else:
+                                            st.error("Email already exists. Please choose another.")
+                                    except Exception as e:
+                                        st.error(f"Error connecting to database: {e}")
+                                    finally:
+                                        cursor.close()
+                                        db.close()
+                                else:
+                                    st.warning('Passwords does not matched')
                             else:
-                                st.warning('Passwords does not matched')
+                                st.error('Please Fill up the form')
                         else:
-                            st.error('Please Fill up the form')   
+                            st.error('Email is not valid. Please provide a valid email')          
 
             #-----Update User Details-----------
             option = st.selectbox('Update User Details',
