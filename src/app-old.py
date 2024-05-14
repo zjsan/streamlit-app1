@@ -163,13 +163,11 @@ def show_auth_page():
             login_password = st.text_input("Password", type="password")
             st.button("Login", key='login',on_click=login_functionality, args=(login_email,login_password))
    
+           
             #--------registration part------
             if st.checkbox("Register here"):
                 st.write('Please Register using  your Hugging Face Credentials')
-                #Hugging Face Credentials:
-                huggingface_cred = 'https://huggingface.co/join?next=https%3A%2F%2Fhuggingface.co%2Foauth%2Fauthorize%3Fclient_id%3D8f1a1d63-479b-46c8-84cb-521fe9f3222f%26scope%3Dopenid%2520profile%26response_type%3Dcode%26redirect_uri%3Dhttps%253A%252F%252Fhuggingface.co%252Fchat%252Flogin%252Fcallback%26state%3DeyJkYXRhIjp7ImV4cGlyYXRpb24iOjE3MTU1OTYzNjA2NDUsInJlZGlyZWN0VXJsIjoiaHR0cHM6Ly9odWdnaW5nZmFjZS5jby9jaGF0L2xvZ2luL2NhbGxiYWNrIn0sInNpZ25hdHVyZSI6IjE0Zjk5MGMxOTRhYTY3NTY1NWViMzQ2YTcyYTVmN2ZiYmU3OTAyMWQzMzRjMTBkYTc3NWJiOGQxMzBlOTRjZWIifQ%253D%253D'
-                st.write("Click this link: [Hugging Face Credentials](%s)" % huggingface_cred)
-                #st.link_button("Hugging Face Credentials: ", "")
+                st.write('Hugging Face Credentials: ')
                 with st.form("registration_form"):
                     email = st.text_input("Email")
                     new_password = st.text_input("Password", type="password")
@@ -203,7 +201,115 @@ def show_auth_page():
                             else:
                                 st.warning('Passwords does not matched')
                         else:
-                            st.error('Please Fill up the form')        
+                            st.error('Please Fill up the form')   
+
+            #-----Update User Details-----------
+            option = st.selectbox('Update User Details',
+                                  ('Email', 'Password'), index=None,placeholder='Email / Password')
+
+            #--------Update Email----------
+            if option == 'Email':
+                #st.write('Please Update Email ')
+                with st.form("update_email_form"):
+                    email = st.text_input("Current email")
+                    new_email = st.text_input("New email")
+                    confirm_email_update = st.text_input("Confirm email")
+                    submit_button =  st.form_submit_button('Save')
+
+                    if submit_button:#check if input fields is filled
+                        if email and new_email and confirm_email_update:
+                            if new_email == confirm_email_update:
+                            #------------database queries----------
+                            #user email update logic
+                                try:
+                                    db = get_db_connection()
+                                    cursor = db.cursor()
+                                    #-----authenticating user-------
+                                    # Check for email availability
+                                    cursor.execute("SELECT * FROM user WHERE user_email = %s", (email,))
+                                    existing_email = cursor.fetchone()#retrieving current user_email from database
+                                    cursor.execute("SELECT * FROM user WHERE user_email = %s", (new_email,))
+                                    new_email_db = cursor.fetchone()#to check if new_email already exists
+
+                                    #---------------authentication logic-----------------------
+                                    if existing_email:#check if the old email is in the database
+                                        if not new_email_db:#if new_email is not yet in the database then proceed to update the old email 
+                                            # Insert new user into database
+                                            # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
+                                            cursor.execute("UPDATE user set user_email = %s WHERE user_email = %s", (new_email, email))
+                                            db.commit()
+                                            st.success("Your email has been updated successfully. Please log in again with your new credentials.")  
+                                        else:
+                                            st.error("Email already exists. Please choose another.")
+                                    else:
+                                        st.error("The current email provided is incorrect. Please double-check and try again..")
+
+                                except Exception as e:
+                                    st.error(f"Error connecting to database: {e}")
+                                finally:
+                                    cursor.close()
+                                    db.close()
+                            else:
+                                st.warning('Invalid password confirmation.Please double-check and try again.')
+                        else:
+                            st.error('Please Fill up the form') 
+
+            #----Update Password----
+            elif option == 'Password':
+                #st.write('Please Update Email ')
+                with st.form("update_password_form"):
+                    email = st.text_input("Email")
+                    password = st.text_input("Old password")
+                    new_password = st.text_input("New password")
+                    confirm_password_update = st.text_input("Confirm password")
+                    submit_button =  st.form_submit_button('Save')
+
+                    if submit_button:
+                        if email and password and new_password and confirm_password_update:
+                            if new_password  == confirm_password_update:
+                            #------------database queries----------
+                            #user password update logic
+                                try:
+                                #----executing database interactions----
+                                    db = get_db_connection()
+                                    cursor = db.cursor()
+
+                                    #-----authenticating user-------
+                                    #getting user email for database request
+                                    cursor.execute("SELECT * FROM user WHERE user_email = %s", (email,))
+                                    existing_email = cursor.fetchone()
+                                    db_user_password = existing_email[2]#retrieving current user_password from database
+                                    cursor.execute("SELECT * FROM user WHERE user_email = %s", (new_password,))
+                                    new_password_db = cursor.fetchone()#to check if new_password already exists
+
+                                    #---------------authentication logic-----------------------
+                                    if existing_email:#check if the old email is in the database
+                                        if db_user_password:#
+                                            if password:#for authentication
+                                                if not new_password_db:#if new_password is not yet in the database then proceed to update the old email 
+                                                    # Insert new user into database
+                                                    # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
+                                                    cursor.execute("UPDATE user set user_password = %s WHERE user_email = %s", (new_password, email))
+                                                    db.commit()
+                                                    st.success("Your password has been updated successfully. Please log in again with your new credentials.")  
+                                                else:
+                                                    st.error("The new password you entered is already exists. Please choose another.")
+                                            else:
+                                                st.write('The current password provided is incorrect. Please double-check and try again.')
+                                    else:
+                                        st.error("The email provided is incorrect. Please double-check and try again.")
+
+                                except Exception as e:
+                                    st.error(f"Error connecting to database: {e}")
+                                finally:
+                                    cursor.close()
+                                    db.close()
+                            else:
+                                st.warning('Invalid password confirmation.Please double-check and try again.')
+                        else:
+                            st.error('Please Fill up the form') 
+
+
 #---------Main Page-------------
 def show_main_section():
     
