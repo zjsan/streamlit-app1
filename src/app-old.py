@@ -1076,31 +1076,38 @@ def show_main_section():
                 #st.write(st.session_state.msg_context)
  
             def main():
-                get_db_connection()#checking database connection
+                get_db_connection()  # checking database connection
+                
                 # Applying the user input box
                 with input_container:
                     # User input
                     additional_prompts = list(question_params())
                     st.write(additional_prompts)
-                    #st.write(additional_prompts)#checking the index location of the additional prompts
+                    
+                    # Display response history
                     display_response_history()
-                    #if user enters needed parameters => enable text input for context
-                    user_message = st.text_area("Enter text context:") # taking user provided prompt as input
+                    
+                    # If user enters needed parameters, enable text input for context
+                    user_message = st.text_area("Enter text context:")  # taking user provided prompt as input
+                    
                     if st.button("Submit"):
-                        #---Validating User Inputs----
-                        if additional_prompts:
-                            if int(additional_prompts[1]) > 0:
-                                if user_message:
-                                    st.session_state.msg_context = user_message
-                                    with st.spinner('Wait for it...'):
-                                        response_ai(user_message, additional_prompts)
-                                        #st.rerun()#use to terminate another insertion in db once the questions are generated
-                                ##else:
-                                    #st.warning("Please provide the question context.")
+                        # ---Validating User Inputs----
+                        if additional_prompts is not None:
+                            if len(additional_prompts) >= 2 and additional_prompts[1] is not None:
+                                if int(additional_prompts[1]) > 0:
+                                    if user_message:
+                                        st.session_state.msg_context = user_message
+                                        with st.spinner('Wait for it...'):
+                                            response_ai(user_message, additional_prompts)
+                                    else:
+                                        st.warning("Please provide the question context.")
+                                else:
+                                    st.warning('Question items must be greater than 0')
                             else:
-                                st.warning('Question items must be greater than 0')
+                                st.warning("Missing input fields.")
                         else:
-                            st.warning("Missing input fields.")           
+                            st.warning("Missing input fields.")
+
                     #else:
                      #  st.warning('Missing input fields')
 
