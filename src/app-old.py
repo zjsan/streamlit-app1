@@ -236,42 +236,48 @@ def show_auth_page():
                     submit_button =  st.form_submit_button('Save')
 
                     if submit_button:#check if input fields is filled
-                        if email and new_email and confirm_email_update:
-                            if new_email == confirm_email_update:
-                            #------------database queries----------
-                            #user email update logic
-                                try:
-                                    db = get_db_connection()
-                                    cursor = db.cursor()
-                                    #-----authenticating user-------
-                                    # Check for email availability
-                                    cursor.execute("SELECT * FROM user WHERE user_email = %s", (email,))
-                                    existing_email = cursor.fetchone()#retrieving current user_email from database
-                                    cursor.execute("SELECT * FROM user WHERE user_email = %s", (new_email,))
-                                    new_email_db = cursor.fetchone()#to check if new_email already exists
+                        if validate_email(new_email):
+                            if email and new_email and confirm_email_update:
+                                if new_email == confirm_email_update:
+                                #------------database queries----------
+                                #user email update logic
+                                    try:
+                                        db = get_db_connection()
+                                        cursor = db.cursor()
+                                        #-----authenticating user-------
+                                        # Check for email availability
+                                        cursor.execute("SELECT * FROM user WHERE user_email = %s", (email,))
+                                        existing_email = cursor.fetchone()#retrieving current user_email from database
+                                        cursor.execute("SELECT * FROM user WHERE user_email = %s", (new_email,))
+                                        new_email_db = cursor.fetchone()#to check if new_email already exists
 
-                                    #---------------authentication logic-----------------------
-                                    if existing_email:#check if the old email is in the database
-                                        if not new_email_db:#if new_email is not yet in the database then proceed to update the old email 
-                                            # Insert new user into database
-                                            # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
-                                            cursor.execute("UPDATE user set user_email = %s WHERE user_email = %s", (new_email, email))
-                                            db.commit()
-                                            st.success("Your email has been updated successfully. Please log in again with your new credentials.")  
+                                        #---------------authentication logic-----------------------
+                                        if existing_email:#check if the old email is in the database
+                                            if not new_email_db:#if new_email is not yet in the database then proceed to update the old email 
+                                                # Insert new user into database
+                                                # cursor.execute("UPDATE user set active_status = %s WHERE user_email = %s", (active_status, st.session_state.email))
+                                                cursor.execute("UPDATE user set user_email = %s WHERE user_email = %s", (new_email, email))
+                                                db.commit()
+                                                st.success("Your email has been updated successfully. Please log in again with your new credentials.")  
+                                            else:
+                                                st.error("Email already exists. Please choose another.")
                                         else:
-                                            st.error("Email already exists. Please choose another.")
-                                    else:
-                                        st.error("The current email provided is incorrect. Please double-check and try again..")
+                                            st.error("The current email provided is incorrect. Please double-check and try again..")
 
-                                except Exception as e:
-                                    st.error(f"Error connecting to database: {e}")
-                                finally:
-                                    cursor.close()
-                                    db.close()
+                                    except Exception as e:
+                                        st.error(f"Error connecting to database: {e}")
+                                    finally:
+                                        cursor.close()
+                                        db.close()
+                                        st.rerun()
+                                else:
+                                    st.warning('Invalid email confirmation.Please double-check and try again.')
                             else:
-                                st.warning('Invalid email confirmation.Please double-check and try again.')
+                                st.error('Please Fill up the form') 
+                                st.rerun()
                         else:
-                            st.error('Please Fill up the form') 
+                            st.error('Email is not valid. Please provide a valid email') 
+                            #st.rerun()
 
             #----Update Password----
             elif option == 'Password':
@@ -318,8 +324,10 @@ def show_auth_page():
                             finally:
                                 cursor.close()
                                 db.close()
+                                st.rerun()
                         else:
                             st.error('Please fill up the form')
+                            #st.rerun()
 
 
 #---------Main Page-------------
