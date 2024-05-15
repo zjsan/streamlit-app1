@@ -1124,19 +1124,21 @@ def showlogout_page():
         if st.session_state.email and st.sidebar.button('Logout', key='logout'):
         #----------implementing a pop window before logging out the user--------
             #logout_clicked()
-        #st.button("Login", key='login',on_click=login_functionality, args=(login_email,login_password))
-            #st.warning('Are you sure you want to log out?')
-            #if st.button("Yes",key='proceed_logout',on_click=logout_clicked):
-             #   st.success('You are now logged out')
-           # elif st.button("No"):
-            #    st.rerun()
-            #show_auth_page()
+           # st.button("Login", key='login',on_click=login_functionality, args=(login_email,login_password))
             with st.container(border=True):
-                st.sidebar.checkbox('Verify logout', key='verify_logout')
-                if st.button("Yes",key='proceed_logout',on_click=logout_clicked):
-                     st.success('You are now logged out')
-                elif st.button("No"):
+                col1_yes_button, col2_no_button = st.sidebar.columns([4,1])
+                st.sidebar.warning('Are you sure you want to log out?')
+                if st.sidebar.button("Yes",key='proceed_logout',on_click=logout_clicked):
+                    st.success('You are now logged out')
+                elif st.sidebar.button("No"):
                     st.rerun()
+                    #show_auth_page()
+            #with st.container(border=True):
+                #st.sidebar.checkbox('Verify logout', key='verify_logout')
+             #   if st.sidebar.button("Yes",key='proceed_logout',on_click=logout_clicked):
+               #      st.success('You are now logged out')
+              #  elif st.sidebar.button("No"):
+                #    st.rerun()
                 
             
 
