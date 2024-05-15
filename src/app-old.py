@@ -941,7 +941,7 @@ def show_main_section():
                                         if generated_response:
                                             cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
                                                         (str(generated_response), data_id))
-                                    db.commit()#proceed to inser the record
+                                    db.commit()#proceed to insert the record
                                    
                                     #display the generated questions and question context
                                     for i in range(len(st.session_state['generated'])):
@@ -950,7 +950,6 @@ def show_main_section():
 
                                 else:
                                     st.warning("No responses generated.")  # Inform user if no responses were generated
-
                             else:
                                 st.error("User not found.")
                         except Exception as e:
@@ -960,7 +959,7 @@ def show_main_section():
                             st.success("Check Response History.")
                             cursor.close()  # Ensure cursor is closed even in case of exceptions
                             db.close()  # Ensure database connection is closed
-                            st.rerun()  # After the insertion, trigger a rerun of the Streamlit app
+                            #st.rerun()  # After the insertion, trigger a rerun of the Streamlit app
 
 
             #--------Implementing the Response History Feature--------
@@ -1082,20 +1081,28 @@ def show_main_section():
                 with input_container:
                     # User input
                     additional_prompts = list(question_params())
-                    #print(additional_prompts)
+                    st.write(additional_prompts)
                     #st.write(additional_prompts)#checking the index location of the additional prompts
                     display_response_history()
                     #if user enters needed parameters => enable text input for context
-                    if  additional_prompts:
-                        user_message = st.text_area("Enter text context:") # taking user provided prompt as input
-                        if st.button("Submit"):
-                            if user_message:
-                                st.session_state.msg_context = user_message
-                                with st.spinner('Wait for it...'):
-                                    response_ai(user_message, additional_prompts)
-                                    #st.rerun()#use to terminate another insertion in db once the questions are generated
+                    user_message = st.text_area("Enter text context:") # taking user provided prompt as input
+                    if st.button("Submit"):
+                        #---Validating User Inputs----
+                        if additional_prompts:
+                            if int(additional_prompts[1]) > 0:
+                                if user_message:
+                                    st.session_state.msg_context = user_message
+                                    with st.spinner('Wait for it...'):
+                                        response_ai(user_message, additional_prompts)
+                                        #st.rerun()#use to terminate another insertion in db once the questions are generated
+                                ##else:
+                                    #st.warning("Please provide the question context.")
                             else:
-                                st.warning("Missing input fields.") 
+                                st.warning('Question items must be greater than 0')
+                        else:
+                            st.warning("Missing input fields.")           
+                    #else:
+                     #  st.warning('Missing input fields')
 
             if __name__ == "__main__":
                 main()
