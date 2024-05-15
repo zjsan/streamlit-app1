@@ -1082,7 +1082,7 @@ def show_main_section():
                 with input_container:
                     # User input
                     additional_prompts = list(question_params())
-                    st.write(additional_prompts)
+                    #st.write(additional_prompts)
                     
                     # Display response history
                     display_response_history()
@@ -1095,10 +1095,10 @@ def show_main_section():
                         if additional_prompts is not None:
                             if len(additional_prompts) >= 2 and additional_prompts[1] is not None:
                                 if int(additional_prompts[1]) > 0:
-                                    if user_message:
-                                        st.session_state.msg_context = user_message
+                                    if user_message:#if text context is filled proceed to generate response
+                                        st.session_state.msg_context = user_message#assigning text context to session state variable
                                         with st.spinner('Wait for it...'):
-                                            response_ai(user_message, additional_prompts)
+                                            response_ai(user_message, additional_prompts)#calling function that handles the the function call for question generation
                                     else:
                                         st.warning("Please provide the question context.")
                                 else:
