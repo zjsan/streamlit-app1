@@ -26,6 +26,13 @@ def get_db_connection():
         print("Error connecting to database:", err)
         return None  # Or raise a custom exception
   
+
+# Create a session object with connection pooling
+session = requests.Session()
+  
+#By using connection pooling with the session object, the requests library will automatically manage 
+#and reuse connections, improving the efficiency of making multiple requests to the API within 
+
  #3 maximum number of retry attempts for connection
 # Function to make an HTTPS request with retry logic
 def make_https_request_with_retry(url, max_retry_attempts=3):
@@ -33,7 +40,7 @@ def make_https_request_with_retry(url, max_retry_attempts=3):
     for attempt in range(max_retry_attempts):
         try:
             # Attempt to make the HTTPS request
-            response = requests.get(url)
+            response = session.get(url)
             # Check if the request was successful (status code 200)
             if response.status_code == 200:
                 return response  # Return the response if successful
@@ -43,15 +50,15 @@ def make_https_request_with_retry(url, max_retry_attempts=3):
         # Handle timeout errors
         except requests.exceptions.Timeout:
             if attempt < max_retry_attempts - 1:
-                st.write(f"Connection attempt {attempt+1} timed out. Retrying...")#debug
+                st.warning(f"Connection attempt {attempt+1} timed out. Retrying...")#debug
             else:
-                st.write("Connection timed out after multiple attempts. Check your internet connection")#debug
+                st.warning("Connection timed out after multiple attempts. Check your internet connection")#debug
         # Handle other request exceptions
         except requests.exceptions.RequestException as e:
             if attempt < max_retry_attempts - 1:
-                st.write("An error occurred:", e, "Retrying...")#debug
+                st.warning("An error occurred:", e, "Retrying...")#debug
             else:
-                st.write("Maximum retry attempts reached. Check your internet connection")#debug
+                st.error("Maximum retry attempts reached. Check your internet connection")#debug
     return None  # Return None if all attempts fail
 
 
@@ -182,8 +189,11 @@ def show_auth_page():
            
             #--------registration part------
             if st.checkbox("Register here"):
-                st.write('Please Register using  your Hugging Face Credentials')
-                st.write('Hugging Face Credentials: ')
+                st.warning('Please Register using  your Hugging Face Credentials')
+                st.warning('Your Hugging Face account will be used to access the Large Language Model')
+               # st.write('Hugging Face Credentials: ')
+                hugchat_url = "https://huggingface.co/join"
+                st.markdown("Hugging Face Credentials: [https://huggingface.co/join](%s)" %hugchat_url)
                 with st.form("registration_form"):
                     email = st.text_input("Email")
                     new_password = st.text_input("Password", type="password")
@@ -269,12 +279,12 @@ def show_auth_page():
                                     finally:
                                         cursor.close()
                                         db.close()
-                                        st.rerun()
+                                        #st.rerun()
                                 else:
                                     st.warning('Invalid email confirmation.Please double-check and try again.')
                             else:
                                 st.error('Please Fill up the form') 
-                                st.rerun()
+                               # st.rerun()
                         else:
                             st.error('Email is not valid. Please provide a valid email') 
                             #st.rerun()
@@ -324,7 +334,7 @@ def show_auth_page():
                             finally:
                                 cursor.close()
                                 db.close()
-                                st.rerun()
+                                #st.rerun()
                         else:
                             st.error('Please fill up the form')
                             #st.rerun()
@@ -948,7 +958,13 @@ def show_main_section():
                                             cursor.execute("INSERT INTO responses (responses, data_id) VALUES (%s, %s)",
                                                         (str(generated_response), data_id))
                                     db.commit()#proceed to insert the record
-                                   
+                                    st.success("Questions Generated!")
+                                    #st.success("Check Response History.")  
+
+                                    #-----printing------
+                                    #for i in range(len(st.session_state['generated'])):
+                                        #st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
+                                        #st.write(st.session_state['generated'][i], key=str(i))
                                 else:
                                     st.warning("No responses generated.")  # Inform user if no responses were generated
                             else:
@@ -958,8 +974,6 @@ def show_main_section():
                         finally:
                             st.session_state.past = None#fixing multiple insertion after new user input
                             st.session_state.generated = None#fixing multiple insertion after new user input
-                            st.success("Questions Generated!")
-                            st.success("Check Response History.")
                             cursor.close()  # Ensure cursor is closed even in case of exceptions
                             db.close()  # Ensure database connection is closed
                             st.rerun()  # After the insertion, trigger a rerun of the Streamlit app
