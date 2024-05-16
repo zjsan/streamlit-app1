@@ -915,6 +915,12 @@ def show_main_section():
                 with response_container:
                     if user_message:
                         response = generate_response(user_message, additional_prompts)
+
+                        if 'past' not in st.session_state or st.session_state.past is None:
+                            st.session_state.past = []
+                        if 'generated' not in st.session_state or st.session_state.generated is None:
+                            st.session_state.generated = []
+
                         st.session_state.past.append(user_message)
                         st.session_state.generated.append(response)
 
@@ -943,11 +949,6 @@ def show_main_section():
                                                         (str(generated_response), data_id))
                                     db.commit()#proceed to insert the record
                                    
-                                    #display the generated questions and question context
-                                    for i in range(len(st.session_state['generated'])):
-                                        st.write(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-                                        st.write(st.session_state['generated'][i], key=str(i))
-
                                 else:
                                     st.warning("No responses generated.")  # Inform user if no responses were generated
                             else:
@@ -955,12 +956,13 @@ def show_main_section():
                         except Exception as e:
                             st.error(f"Error connecting to database: {e}")
                         finally:
+                            st.session_state.past = None#fixing multiple insertion after new user input
+                            st.session_state.generated = None#fixing multiple insertion after new user input
                             st.success("Questions Generated!")
                             st.success("Check Response History.")
                             cursor.close()  # Ensure cursor is closed even in case of exceptions
                             db.close()  # Ensure database connection is closed
-                            #st.rerun()  # After the insertion, trigger a rerun of the Streamlit app
-
+                            st.rerun()  # After the insertion, trigger a rerun of the Streamlit app
 
             #--------Implementing the Response History Feature--------
             def get_response_history_from_db():
@@ -1116,32 +1118,28 @@ def show_main_section():
                 #st.rerun()
 
 def showlogout_page():
-    #initial_login_email =  st.session_state['email']#use for logout
-    # Clear main section
-    main_section.empty()
-    auth_section.empty()
-    with logout_section:
-        if st.session_state.email and st.sidebar.button('Logout', key='logout'):
-        #----------implementing a pop window before logging out the user--------
-            #logout_clicked()
-           # st.button("Login", key='login',on_click=login_functionality, args=(login_email,login_password))
-            with st.container(border=True):
-                col1_yes_button, col2_no_button = st.sidebar.columns([4,1])
-                st.sidebar.warning('Are you sure you want to log out?')
-                if st.sidebar.button("Yes",key='proceed_logout',on_click=logout_clicked):
-                    st.success('You are now logged out')
-                elif st.sidebar.button("No"):
-                    st.rerun()
-                    #show_auth_page()
-            #with st.container(border=True):
-                #st.sidebar.checkbox('Verify logout', key='verify_logout')
-             #   if st.sidebar.button("Yes",key='proceed_logout',on_click=logout_clicked):
-               #      st.success('You are now logged out')
-              #  elif st.sidebar.button("No"):
-                #    st.rerun()
-                
-            
+    if st.session_state.email and st.sidebar.button('Logout', key='logout'):
+        confirmation_container = st.container()  # Create a container for confirmation UI
+        with confirmation_container:
+            st.warning('Are you sure you want to log out?')
+            if st.sidebar.button("Yes", key='proceed_logout', on_click=logout_clicked):
+                st.success('You are now logged out')
+                confirmation_container.empty()  # Clear only confirmation UI after logout
+            no_button = st.sidebar.button("No")
+            if no_button:
+                pass
+                confirmation_container.empty()  # Clear only confirmation UI on cancel
 
+        #alternate code for logout
+        #if st.session_state.email and st.sidebar.button('Logout', key='logout'):
+        #confirmation_container = st.container()  # Create a container for confirmation UI
+        #with confirmation_container:
+         #   confirmation = st.sidebar.text_input("Are you sure you want to log out? (Yes/No)", "")
+          #  if confirmation.lower() == "yes":
+           #     logout_clicked()
+            #    st.success('You are now logged out')
+            #elif confirmation.lower() == "no":
+             #   pass  # Do nothing if the user cancels logout
 def logout_clicked():
     # Clear main section
     main_section.empty()
