@@ -87,6 +87,7 @@ header_section = st.container()
 main_section = st.container()
 auth_section = st.container()
 logout_section = st.container()
+admin_section = st.container()
 
 #------------Session States-----------------------------
 
@@ -182,6 +183,8 @@ def show_auth_page():
                     st.warning("Please enter username and password.")
 
             #-------login form part-------------
+            st.write('For administrators: Use the provided credentials')
+          #  st.write('For administrators: Use the provided credentials')
             login_email = st.text_input("Email")
             login_password = st.text_input("Password", type="password")
             st.button("Login", key='login',on_click=login_functionality, args=(login_email,login_password))
@@ -230,7 +233,14 @@ def show_auth_page():
                             else:
                                 st.error('Please Fill up the form')
                         else:
-                            st.error('Email is not valid. Please provide a valid email')          
+                            st.error('Email is not valid. Please provide a valid email') 
+
+            #--------admin login------
+            if st.checkbox("Admin Login"):
+                login_email = st.text_input("Email", key="admin_login_email")
+                login_password = st.text_input("Password", type="password", key='admin_password_login')
+                st.button("Login", key='login_admin_button',on_click=login_functionality, args=(login_email,login_password))
+                        
 
             #-----Update User Details-----------
             option = st.selectbox('Update User Details',
@@ -1131,6 +1141,23 @@ def show_main_section():
                 main()
                 #st.rerun()
 
+def show_admin_page():
+    with admin_section:
+        #   st.title("CogniCraft - Smart Exam Question Generation With AI and Bloom's Taxonomy")
+       # st.write(f"Active Status value: {active_status}")#for debuggin
+        st.sidebar.write(f"Welcome, {st.session_state['hf_email']}!")
+        showlogout_page()
+        with st.sidebar:
+                st.markdown('''
+                ## About
+                This app is a LLM-powered exam question generator built using:
+                - [Streamlit](<https://streamlit.io/>)
+                - [HugChat](<https://github.com/Soulter/hugging-chat-api>)
+                - [OpenAssistant/oasst-sft-6-llama-30b-xor](<https://huggingface.co/OpenAssistant/oasst-sft-6-llama-30b-xor>) LLM model
+                ''') 
+
+        st.button("Update", type="primary")
+
 def showlogout_page():
     if st.session_state.email and st.sidebar.button('Logout', key='logout'):
         confirmation_container = st.container()  # Create a container for confirmation UI
@@ -1183,8 +1210,14 @@ with header_section:
         login_status = st.query_params.get("logged_in")
        # st.write(login_status)
         if st.session_state.email and st.session_state.user and login_status:
-            show_main_section()
-            st.stop()
+          #  st.write(st.session_state.email)
+            
+            if 'admin' in st.session_state.email:#check if the word admin is in the email 
+                show_admin_page()
+                st.stop()
+            else:
+                show_main_section()
+                st.stop()
         else:
             main_section.empty()  # Clear main section
             logout_clicked()
