@@ -183,7 +183,7 @@ def show_auth_page():
                     st.warning("Please enter username and password.")
 
             #-------login form part-------------
-            st.write('For administrators: Use the provided credentials')
+           # st.write('For administrators: Use the provided credentials')
           #  st.write('For administrators: Use the provided credentials')
             login_email = st.text_input("Email")
             login_password = st.text_input("Password", type="password")
