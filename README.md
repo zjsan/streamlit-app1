@@ -84,25 +84,17 @@ streamlit run title.py
     3. Working question parameters
     4. Integration of the concept of Revised Bloom's  Taxonomy in the question generation
     5. Flexible Web Layout
+    6. Generated questions and inputs are stored in a database
 
 
 ## Errors and Bugs - need further update for implementation
 
-    1. Additional Testing in the buttons and Inout fields
-    2. Further assurance of the generated Questions
+    1. Additional Testing in the buttons and Input fields
+    2. Further assurance of the Generated Questions
     3. Web layout and Design
-    4. Implementation of further features
-    5. Bug in the text input
-    6. Further checkin in the model response
-    7. Need to disable processing for True or False != Remembering and True or False != Understanding
+    4. Minor error in the logout functionality
+    5. Slow generation of AI response
 
 
 ## Need To Implement- need further update for implementation
     1. PDF Upload 
-    2. Login Credentials for Users - needed for hugchat api
-    3. Database if needed 
-    4. Chat History
-    5. Multiple Pages and Layouts 
-    6. Redesign of Web Components
-    7. Landing Page
-    8. Registration Page - Redirect to huggingface
